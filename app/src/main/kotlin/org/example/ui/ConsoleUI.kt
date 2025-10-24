@@ -28,14 +28,9 @@ class ConsoleUI(private val trainer: ComboTrainer) {
                 "5" -> showLegend()
                 "6" -> {
                     running = false
-                    println("Thanks for training with ComboCoach!")
+                    println("\nThanks for training with ComboCoach!")
                 }
-                else -> println("Invalid option. Please try again.")
-            }
-            
-            if (running) {
-                println("\nPress Enter to continue...")
-                readLine()
+                else -> println("\nInvalid option. Please try again.")
             }
         }
     }
@@ -61,6 +56,8 @@ class ConsoleUI(private val trainer: ComboTrainer) {
         
         val combo = trainer.getRandomCombo()
         displayCombination(combo)
+        
+        println("\n→ Returning to menu...")
     }
     
     private fun startTrainingSession() {
@@ -86,6 +83,7 @@ class ConsoleUI(private val trainer: ComboTrainer) {
         }
         
         println("Training session complete!")
+        println("\n→ Returning to menu...")
     }
     
     private fun viewHistory() {
@@ -104,6 +102,8 @@ class ConsoleUI(private val trainer: ComboTrainer) {
             }
             println("\nTotal combinations: ${history.size}")
         }
+        
+        println("\n→ Returning to menu...")
     }
     
     private fun clearHistory() {
@@ -116,6 +116,8 @@ class ConsoleUI(private val trainer: ComboTrainer) {
         } else {
             println("Operation cancelled.")
         }
+        
+        println("\n→ Returning to menu...")
     }
     
     private fun showLegend() {
@@ -144,6 +146,8 @@ class ConsoleUI(private val trainer: ComboTrainer) {
         println("\nCOLORS:")
         println("  Colors provide visual cues for combinations")
         println("  Use them to quickly identify combo types")
+        
+        println("\n→ Returning to menu...")
     }
     
     private fun displayCombination(combo: Combination) {
