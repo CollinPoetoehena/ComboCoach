@@ -31,6 +31,11 @@ A Kotlin-based boxing training application that generates random combinations to
 - Install Gradle using SDKMAN! or Homebrew on Linux: https://gradle.org/install/
 - Install Kotlin using SDKMAN! or Homebrew on Linux: https://kotlinlang.org/docs/command-line.html#install-the-compiler
 
+### Initialize Kotlin Project (ONLY once)
+```sh
+gradle init --type kotlin-application --dsl kotlin 
+```
+
 ### Running the Application
 
 ```sh
