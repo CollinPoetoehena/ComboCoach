@@ -9,6 +9,7 @@ import kotlinx.browser.window
  * This trainer:
  * - Generates a complete flowing combination
  * - Displays each action with a configurable interval
+ * - Automatically starts next combination after interval
  * - Calls back to UI to display each action
  * - Tracks current position throughout the combination
  */
@@ -20,6 +21,7 @@ class IntervalTrainer(
     private var currentActionIndex = 0
     private var timerId: Int? = null
     private var isRunning = false
+    private var totalCombinationsCompleted = 0
     
     /**
      * Callback function to display each action
@@ -29,15 +31,29 @@ class IntervalTrainer(
     
     /**
      * Callback when combination is complete
+     * Parameters: (combinationNumber)
      */
-    var onCombinationComplete: (() -> Unit)? = null
+    var onCombinationComplete: ((Int) -> Unit)? = null
+    
+    /**
+     * Callback when waiting between combinations
+     * Parameters: (secondsRemaining)
+     */
+    var onWaitingBetweenCombinations: ((Int) -> Unit)? = null
+    
+    /**
+     * Starts continuous interval-based training
+     */
+    fun startContinuousTraining() {
+        stop() // Stop any existing training
+        totalCombinationsCompleted = 0
+        startNextCombination()
+    }
     
     /**
      * Starts a new interval-based combination
      */
-    fun startCombination() {
-        stop() // Stop any existing combination
-        
+    private fun startNextCombination() {
         currentCombination = generator.generateFlowingCombination()
         currentActionIndex = 0
         isRunning = true
@@ -50,7 +66,7 @@ class IntervalTrainer(
     }
     
     /**
-     * Stops the current combination
+     * Stops the current training session
      */
     fun stop() {
         timerId?.let { window.clearTimeout(it) }
@@ -58,6 +74,11 @@ class IntervalTrainer(
         isRunning = false
         currentActionIndex = 0
     }
+    
+    /**
+     * Returns total combinations completed in current session
+     */
+    fun getTotalCombinationsCompleted(): Int = totalCombinationsCompleted
     
     /**
      * Pauses the current combination
@@ -121,9 +142,35 @@ class IntervalTrainer(
                 scheduleNextAction()
             } else {
                 // Combination complete
-                isRunning = false
-                onCombinationComplete?.invoke()
+                totalCombinationsCompleted++
+                onCombinationComplete?.invoke(totalCombinationsCompleted)
+                
+                // Wait before starting next combination
+                scheduleNextCombination()
             }
         }, config.actionIntervalMs)
+    }
+    
+    private fun scheduleNextCombination() {
+        if (!isRunning) return
+        
+        // Show countdown between combinations
+        val intervalSeconds = config.combinationIntervalMs / 1000
+        var secondsRemaining = intervalSeconds
+        
+        fun countdown() {
+            if (!isRunning) return
+            
+            if (secondsRemaining > 0) {
+                onWaitingBetweenCombinations?.invoke(secondsRemaining)
+                secondsRemaining--
+                timerId = window.setTimeout({ countdown() }, 1000)
+            } else {
+                // Start next combination
+                startNextCombination()
+            }
+        }
+        
+        countdown()
     }
 }

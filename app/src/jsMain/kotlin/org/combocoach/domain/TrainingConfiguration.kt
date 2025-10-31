@@ -6,10 +6,16 @@ package org.combocoach.domain
  */
 data class TrainingConfiguration(
     /**
-     * Interval between actions in milliseconds (e.g., 1000ms = 1 second)
+     * Interval between actions within a combination in milliseconds (e.g., 1000ms = 1 second)
      * Default: 1000ms (1 second per action)
      */
     val actionIntervalMs: Int = 1000,
+    
+    /**
+     * Interval between combinations in milliseconds (e.g., 3000ms = 3 seconds)
+     * Default: 3000ms (3 seconds between combinations)
+     */
+    val combinationIntervalMs: Int = 3000,
     
     /**
      * Training mode - determines what types of actions to include
@@ -45,12 +51,13 @@ data class TrainingConfiguration(
     /**
      * Ratio of offense to defense (0.0 = all defense, 1.0 = all offense)
      * For BOTH mode, 0.5 means 50/50 split
-     * Ignored for ATTACK_ONLY and DEFENSE_ONLY modes
+     * Only used when trainingMode is BOTH
      */
     val offenseRatio: Float = 0.5f
 ) {
     init {
         require(actionIntervalMs > 0) { "Action interval must be positive" }
+        require(combinationIntervalMs > 0) { "Combination interval must be positive" }
         require(minActions > 0) { "Min actions must be positive" }
         require(maxActions >= minActions) { "Max actions must be >= min actions" }
         require(offenseRatio in 0f..1f) { "Offense ratio must be between 0 and 1" }

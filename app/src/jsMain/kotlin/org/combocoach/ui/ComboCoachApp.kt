@@ -13,7 +13,8 @@ class ComboCoachApp(private val rootElement: Element) {
     private var config = TrainingConfiguration()
     private val trainer = ComboTrainer(config)
     private var currentDisplayedActions = mutableListOf<Action>()
-    private var currentActionIndex = 0
+    private var isConfigExpanded = false
+    private var isLegendExpanded = false
     
     init {
         setupIntervalTrainer()
@@ -29,13 +30,14 @@ class ComboCoachApp(private val rootElement: Element) {
         
         intervalTrainer.onActionDisplay = { action, index, total, isComplete ->
             displayAction(action, index, total)
-            if (isComplete) {
-                showCompletionMessage()
-            }
         }
         
-        intervalTrainer.onCombinationComplete = {
-            enableStartButton()
+        intervalTrainer.onCombinationComplete = { comboNumber ->
+            showCombinationComplete(comboNumber)
+        }
+        
+        intervalTrainer.onWaitingBetweenCombinations = { secondsRemaining ->
+            showWaitingMessage(secondsRemaining)
         }
     }
     
@@ -44,9 +46,9 @@ class ComboCoachApp(private val rootElement: Element) {
             setAttribute("class", "container")
             
             appendChild(createHeader())
-            appendChild(createConfigPanel())
-            appendChild(createControlPanel())
             appendChild(createDisplayArea())
+            appendChild(createControlPanel())
+            appendChild(createConfigPanel())
             appendChild(createStrikeLegend())
         } as HTMLElement
     }
@@ -61,31 +63,95 @@ class ComboCoachApp(private val rootElement: Element) {
         } as HTMLElement
     }
     
+    private fun createDisplayArea(): HTMLElement {
+        return document.createElement("div").apply {
+            setAttribute("class", "display-area")
+            setAttribute("id", "display-area")
+            innerHTML = """
+                <div class="welcome-message">
+                    <p>👊 Configure your training and click "Start Training"!</p>
+                </div>
+            """
+        } as HTMLElement
+    }
+    
+    private fun createControlPanel(): HTMLElement {
+        return document.createElement("div").apply {
+            setAttribute("class", "controls")
+            
+            appendChild(createButton("▶️ Start Training", "btn-primary", "start-btn") {
+                startIntervalTraining()
+            })
+            
+            appendChild(createButton("⏹️ Stop", "btn-danger", "stop-btn") {
+                stopTraining()
+            })
+            
+            appendChild(createButton("👁️ Preview Combo", "btn-secondary") {
+                generatePreview()
+            })
+        } as HTMLElement
+    }
+    
     private fun createConfigPanel(): HTMLElement {
         return document.createElement("div").apply {
             setAttribute("class", "config-panel")
+            
+            // Header with toggle
+            appendChild(document.createElement("div").apply {
+                setAttribute("class", "config-header")
+                innerHTML = """
+                    <h2>⚙️ Configuration</h2>
+                    <button id="config-toggle-btn" class="btn-icon">▼</button>
+                """
+                querySelector("#config-toggle-btn")?.addEventListener("click", {
+                    isConfigExpanded = !isConfigExpanded
+                    render()
+                })
+            })
+            
+            // Collapsible content
+            if (isConfigExpanded) {
+                appendChild(createConfigContent())
+            }
+        } as HTMLElement
+    }
+    
+    private fun createConfigContent(): HTMLElement {
+        return document.createElement("div").apply {
+            setAttribute("class", "config-content")
+            
             innerHTML = """
-                <h2>⚙️ Configuration</h2>
                 <div class="config-grid">
                     <div class="config-item">
-                        <label for="interval-input">Interval (seconds):</label>
-                        <input type="number" id="interval-input" value="${config.actionIntervalMs / 1000}" min="0.5" max="5" step="0.5" />
+                        <label for="action-interval-input">Action Interval (seconds):</label>
+                        <input type="number" id="action-interval-input" value="${config.actionIntervalMs / 1000.0}" min="0.5" max="5" step="0.5" />
+                    </div>
+                    
+                    <div class="config-item">
+                        <label for="combo-interval-input">Combination Interval (seconds):</label>
+                        <input type="number" id="combo-interval-input" value="${config.combinationIntervalMs / 1000.0}" min="1" max="10" step="0.5" />
                     </div>
                     
                     <div class="config-item">
                         <label for="mode-select">Training Mode:</label>
                         <select id="mode-select">
-                            <option value="BOTH">Both (Attack + Defense)</option>
-                            <option value="ATTACK_ONLY">Attack Only</option>
-                            <option value="DEFENSE_ONLY">Defense Only</option>
+                            <option value="BOTH" ${if (config.trainingMode == TrainingMode.BOTH) "selected" else ""}>Both (Attack + Defense)</option>
+                            <option value="ATTACK_ONLY" ${if (config.trainingMode == TrainingMode.ATTACK_ONLY) "selected" else ""}>Attack Only</option>
+                            <option value="DEFENSE_ONLY" ${if (config.trainingMode == TrainingMode.DEFENSE_ONLY) "selected" else ""}>Defense Only</option>
                         </select>
+                    </div>
+                    
+                    <div class="config-item" id="offense-ratio-container" style="display: ${if (config.trainingMode == TrainingMode.BOTH) "flex" else "none"};">
+                        <label for="offense-ratio-input">Offense % (when using Both):</label>
+                        <input type="number" id="offense-ratio-input" value="${(config.offenseRatio * 100).toInt()}" min="0" max="100" step="5" />
                     </div>
                     
                     <div class="config-item">
                         <label for="stance-select">Stance:</label>
                         <select id="stance-select">
-                            <option value="ORTHODOX">Orthodox (Left Forward)</option>
-                            <option value="SOUTHPAW">Southpaw (Right Forward)</option>
+                            <option value="ORTHODOX" ${if (config.stance == Stance.ORTHODOX) "selected" else ""}>Orthodox (Left Forward)</option>
+                            <option value="SOUTHPAW" ${if (config.stance == Stance.SOUTHPAW) "selected" else ""}>Southpaw (Right Forward)</option>
                         </select>
                     </div>
                     
@@ -99,85 +165,75 @@ class ComboCoachApp(private val rootElement: Element) {
                         <input type="number" id="max-actions-input" value="${config.maxActions}" min="1" max="20" />
                     </div>
                     
-                    <div class="config-item">
-                        <label for="offense-ratio-input">Offense Ratio (0-100%):</label>
-                        <input type="number" id="offense-ratio-input" value="${(config.offenseRatio * 100).toInt()}" min="0" max="100" />
-                    </div>
-                    
-                    <div class="config-item config-item-full">
+                    <div class="config-item config-item-checkbox">
                         <label>
                             <input type="checkbox" id="number-notation-check" ${if (config.useNumberNotation) "checked" else ""} />
-                            Use Number Notation (e.g., "1 2 3" instead of "Jab Cross Lead Hook")
+                            Use Number Notation (e.g., "1 2 3")
                         </label>
                     </div>
                 </div>
-                <button id="apply-config-btn" class="btn btn-secondary">Apply Configuration</button>
+                <button id="apply-config-btn" class="btn btn-primary">✓ Apply Configuration</button>
             """
             
-            // Attach event listeners
+            // Attach event listeners after rendering
             querySelector("#apply-config-btn")?.addEventListener("click", {
                 applyConfiguration()
             })
-        } as HTMLElement
-    }
-    
-    private fun createControlPanel(): HTMLElement {
-        return document.createElement("div").apply {
-            setAttribute("class", "controls")
             
-            appendChild(createButton("Start Interval Training", "btn-primary", "start-btn") {
-                startIntervalTraining()
+            // Show/hide offense ratio based on mode selection
+            querySelector("#mode-select")?.addEventListener("change", {
+                val select = it.target as HTMLSelectElement
+                val offenseContainer = document.getElementById("offense-ratio-container") as? HTMLElement
+                if (select.value == "BOTH") {
+                    offenseContainer?.setAttribute("style", "display: flex;")
+                } else {
+                    offenseContainer?.setAttribute("style", "display: none;")
+                }
             })
-            
-            appendChild(createButton("Stop", "btn-danger", "stop-btn") {
-                stopTraining()
-            })
-            
-            appendChild(createButton("Generate Preview", "btn-secondary", "preview-btn") {
-                generatePreview()
-            })
-            
-            appendChild(createButton("Clear History", "btn-secondary") {
-                clearHistory()
-            })
-        } as HTMLElement
-    }
-    
-    private fun createDisplayArea(): HTMLElement {
-        return document.createElement("div").apply {
-            setAttribute("class", "display-area")
-            setAttribute("id", "display-area")
-            innerHTML = """
-                <div class="welcome-message">
-                    <p>👊 Configure your training and click "Start Interval Training"!</p>
-                    <p class="hint">Each action will be displayed one at a time with your configured interval.</p>
-                </div>
-            """
         } as HTMLElement
     }
     
     private fun createStrikeLegend(): HTMLElement {
         return document.createElement("div").apply {
             setAttribute("class", "legend-container")
-            innerHTML = """
-                <h2>📖 Strike Notation Reference</h2>
-                <p class="legend-description">
-                    Standard boxing numbering system 
-                    (<a href="https://www.expertboxing.com/boxing-basics/boxing-punches" target="_blank">Learn More</a>)
-                </p>
-                <div class="legend-grid">
-                    <div class="legend-item"><span class="strike-number">1</span> - Jab</div>
-                    <div class="legend-item"><span class="strike-number">2</span> - Cross</div>
-                    <div class="legend-item"><span class="strike-number">3</span> - Lead Hook</div>
-                    <div class="legend-item"><span class="strike-number">4</span> - Rear Hook</div>
-                    <div class="legend-item"><span class="strike-number">5</span> - Lead Uppercut</div>
-                    <div class="legend-item"><span class="strike-number">6</span> - Rear Uppercut</div>
-                    <div class="legend-item defense"><span class="strike-number">D1</span> - Defend Jab</div>
-                    <div class="legend-item defense"><span class="strike-number">D2</span> - Defend Cross</div>
-                    <div class="legend-item defense"><span class="strike-number">D3</span> - Defend Hook</div>
-                    <div class="legend-item defense"><span class="strike-number">D4</span> - Defend Uppercut</div>
-                </div>
-            """
+            
+            // Header with toggle
+            appendChild(document.createElement("div").apply {
+                setAttribute("class", "legend-header")
+                innerHTML = """
+                    <h2>📖 Strike Notation Reference</h2>
+                    <button id="legend-toggle-btn" class="btn-icon">▼</button>
+                """
+                querySelector("#legend-toggle-btn")?.addEventListener("click", {
+                    isLegendExpanded = !isLegendExpanded
+                    render()
+                })
+            })
+            
+            // Collapsible content
+            if (isLegendExpanded) {
+                appendChild(document.createElement("div").apply {
+                    setAttribute("class", "legend-content")
+                    innerHTML = """
+                        <p class="legend-description">
+                            Standard boxing numbering system 
+                            (<a href="https://www.expertboxing.com/boxing-basics/boxing-punches" target="_blank">Learn More</a>)
+                        </p>
+                        <div class="legend-grid">
+                            <div class="legend-item"><span class="strike-number">1</span> - Jab</div>
+                            <div class="legend-item"><span class="strike-number">2</span> - Cross</div>
+                            <div class="legend-item"><span class="strike-number">3</span> - Lead Hook</div>
+                            <div class="legend-item"><span class="strike-number">4</span> - Rear Hook</div>
+                            <div class="legend-item"><span class="strike-number">5</span> - Lead Uppercut</div>
+                            <div class="legend-item"><span class="strike-number">6</span> - Rear Uppercut</div>
+                            <div class="legend-item defense"><span class="strike-number">D1</span> - Defend Jab</div>
+                            <div class="legend-item defense"><span class="strike-number">D2</span> - Defend Cross</div>
+                            <div class="legend-item defense"><span class="strike-number">D3</span> - Defend Hook</div>
+                            <div class="legend-item defense"><span class="strike-number">D4</span> - Defend Uppercut</div>
+                        </div>
+                    """
+                })
+            }
         } as HTMLElement
     }
     
@@ -193,7 +249,8 @@ class ComboCoachApp(private val rootElement: Element) {
     }
     
     private fun applyConfiguration() {
-        val intervalInput = document.getElementById("interval-input") as? HTMLInputElement
+        val actionIntervalInput = document.getElementById("action-interval-input") as? HTMLInputElement
+        val comboIntervalInput = document.getElementById("combo-interval-input") as? HTMLInputElement
         val modeSelect = document.getElementById("mode-select") as? HTMLSelectElement
         val stanceSelect = document.getElementById("stance-select") as? HTMLSelectElement
         val minActionsInput = document.getElementById("min-actions-input") as? HTMLInputElement
@@ -201,9 +258,12 @@ class ComboCoachApp(private val rootElement: Element) {
         val offenseRatioInput = document.getElementById("offense-ratio-input") as? HTMLInputElement
         val numberNotationCheck = document.getElementById("number-notation-check") as? HTMLInputElement
         
+        val mode = TrainingMode.valueOf(modeSelect?.value ?: "BOTH")
+        
         config = TrainingConfiguration(
-            actionIntervalMs = ((intervalInput?.value?.toFloatOrNull() ?: 1.0f) * 1000).toInt(),
-            trainingMode = TrainingMode.valueOf(modeSelect?.value ?: "BOTH"),
+            actionIntervalMs = ((actionIntervalInput?.value?.toFloatOrNull() ?: 1.0f) * 1000).toInt(),
+            combinationIntervalMs = ((comboIntervalInput?.value?.toFloatOrNull() ?: 3.0f) * 1000).toInt(),
+            trainingMode = mode,
             stance = Stance.valueOf(stanceSelect?.value ?: "ORTHODOX"),
             minActions = minActionsInput?.value?.toIntOrNull() ?: 3,
             maxActions = maxActionsInput?.value?.toIntOrNull() ?: 8,
@@ -213,18 +273,26 @@ class ComboCoachApp(private val rootElement: Element) {
         
         trainer.updateConfiguration(config)
         
-        showNotification("Configuration applied!")
+        // Collapse config panel after applying
+        isConfigExpanded = false
+        render()
+        
+        showNotification("Configuration applied! ✓")
     }
     
     private fun startIntervalTraining() {
         applyConfiguration()
         currentDisplayedActions.clear()
-        currentActionIndex = 0
         
         val displayArea = document.getElementById("display-area")
         displayArea?.innerHTML = """
             <div class="training-in-progress">
-                <h3>Training in Progress...</h3>
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-label">Combos Completed</div>
+                        <div class="stat-value" id="combos-completed">0</div>
+                    </div>
+                </div>
                 <div id="current-action-display" class="current-action-display"></div>
                 <div id="progress-bar-container" class="progress-bar-container">
                     <div id="progress-bar" class="progress-bar"></div>
@@ -240,7 +308,14 @@ class ComboCoachApp(private val rootElement: Element) {
     private fun stopTraining() {
         trainer.getIntervalTrainer().stop()
         enableStartButton()
-        showNotification("Training stopped")
+        
+        val displayArea = document.getElementById("display-area")
+        displayArea?.innerHTML = """
+            <div class="welcome-message">
+                <p>⏹️ Training stopped</p>
+                <p class="hint">Click "Start Training" to begin again</p>
+            </div>
+        """
     }
     
     private fun generatePreview() {
@@ -265,7 +340,6 @@ class ComboCoachApp(private val rootElement: Element) {
     
     private fun displayAction(action: Action, index: Int, total: Int) {
         currentDisplayedActions.add(action)
-        currentActionIndex = index
         
         val currentActionDisplay = document.getElementById("current-action-display")
         val type = if (action.isOffensive()) "offensive" else "defensive"
@@ -290,38 +364,45 @@ class ComboCoachApp(private val rootElement: Element) {
         } else {
             currentDisplayedActions.joinToString(" → ") { it.displayName() }
         }
-        preview?.innerHTML = """<div class="preview-text">Combination so far: $formattedSoFar</div>"""
+        preview?.innerHTML = """<div class="preview-text">Combination: $formattedSoFar</div>"""
     }
     
-    private fun showCompletionMessage() {
+    private fun showCombinationComplete(comboNumber: Int) {
+        // Update stats
+        val statsValue = document.getElementById("combos-completed")
+        statsValue?.textContent = comboNumber.toString()
+        
+        // Clear for next combination
+        currentDisplayedActions.clear()
+    }
+    
+    private fun showWaitingMessage(secondsRemaining: Int) {
         val currentActionDisplay = document.getElementById("current-action-display")
-        currentActionDisplay?.innerHTML += """
-            <div class="completion-message">
-                ✅ Combination Complete!
+        currentActionDisplay?.innerHTML = """
+            <div class="waiting-card">
+                <div class="waiting-timer">${secondsRemaining}</div>
+                <div class="waiting-text">Next combination starting...</div>
             </div>
         """
-    }
-    
-    private fun clearHistory() {
-        trainer.clearHistory()
-        showNotification("History cleared")
+        
+        // Reset progress bar
+        val progressBar = document.getElementById("progress-bar")
+        progressBar?.setAttribute("style", "width: 0%")
     }
     
     private fun disableStartButton() {
         val btn = document.getElementById("start-btn") as? HTMLElement
         btn?.setAttribute("disabled", "true")
-        btn?.style?.opacity = "0.5"
+        btn?.setAttribute("style", "opacity: 0.6; cursor: not-allowed;")
     }
     
     private fun enableStartButton() {
         val btn = document.getElementById("start-btn") as? HTMLElement
         btn?.removeAttribute("disabled")
-        btn?.style?.opacity = "1"
+        btn?.setAttribute("style", "opacity: 1; cursor: pointer;")
     }
     
     private fun showNotification(message: String) {
-        // Simple notification - could be enhanced with a toast library
         console.log("Notification: $message")
-        // TODO: Implement visual notification
     }
 }

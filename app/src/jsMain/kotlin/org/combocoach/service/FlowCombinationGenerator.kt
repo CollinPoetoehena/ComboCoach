@@ -53,19 +53,17 @@ class FlowCombinationGenerator(
      * Returns all actions that can be performed from the given position
      */
     private fun getAvailableActions(position: Position): List<Action> {
-        val actions = mutableListOf<Action>()
-        
-        when (config.trainingMode) {
+        return when (config.trainingMode) {
             TrainingMode.ATTACK_ONLY -> {
-                // Only offensive actions
-                actions.addAll(Action.allOffensive().filter { 
+                // Only offensive actions that can be performed from current position
+                Action.allOffensive().filter { 
                     position.canPerformAction(it, config.stance) 
-                })
+                }
             }
             
             TrainingMode.DEFENSE_ONLY -> {
-                // Only defensive actions (always available)
-                actions.addAll(Action.allDefensive())
+                // Only defensive actions (always available from any position)
+                Action.allDefensive()
             }
             
             TrainingMode.BOTH -> {
@@ -76,26 +74,17 @@ class FlowCombinationGenerator(
                     val offensiveActions = Action.allOffensive().filter { 
                         position.canPerformAction(it, config.stance) 
                     }
+                    // If no offensive actions available from this position, use defensive
                     if (offensiveActions.isNotEmpty()) {
-                        actions.addAll(offensiveActions)
+                        offensiveActions
                     } else {
-                        // Fallback to defensive if no offensive available
-                        actions.addAll(Action.allDefensive())
+                        Action.allDefensive()
                     }
                 } else {
-                    actions.addAll(Action.allDefensive())
+                    Action.allDefensive()
                 }
             }
         }
-        
-        // Safety check - should never happen but ensures we always have options
-        if (actions.isEmpty()) {
-            actions.addAll(Action.allOffensive().filter { 
-                position.canPerformAction(it, config.stance) 
-            })
-        }
-        
-        return actions
     }
     
     /**

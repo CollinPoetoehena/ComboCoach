@@ -30,11 +30,12 @@ class ComboTrainer(
     }
     
     /**
-     * Starts an interval-based training session
+     * Starts continuous interval-based training session
      * Actions will be displayed one at a time with configured interval
+     * Automatically continues with next combination after interval
      */
     fun startIntervalTraining() {
-        intervalTrainer.startCombination()
+        intervalTrainer.startContinuousTraining()
     }
     
     /**
