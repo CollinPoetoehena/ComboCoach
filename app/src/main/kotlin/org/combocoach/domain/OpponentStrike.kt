@@ -1,4 +1,4 @@
-package org.example.domain
+package org.combocoach.domain
 
 /**
  * Represents opponent strikes that need to be defended against

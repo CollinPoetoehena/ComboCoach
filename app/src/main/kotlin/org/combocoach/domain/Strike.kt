@@ -1,4 +1,4 @@
-package org.example.domain
+package org.combocoach.domain
 
 /**
  * Represents different types of strikes in boxing

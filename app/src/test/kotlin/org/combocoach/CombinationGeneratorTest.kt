@@ -1,6 +1,6 @@
-package org.example
+package org.combocoach
 
-import org.example.service.CombinationGenerator
+import org.combocoach.service.CombinationGenerator
 import kotlin.test.Test
 import kotlin.test.assertTrue
 import kotlin.test.assertEquals

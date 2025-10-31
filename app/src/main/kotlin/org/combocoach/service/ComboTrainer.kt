@@ -1,6 +1,6 @@
-package org.example.service
+package org.combocoach.service
 
-import org.example.domain.Combination
+import org.combocoach.domain.Combination
 
 /**
  * Service for managing training sessions

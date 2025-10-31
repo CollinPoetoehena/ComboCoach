@@ -1,7 +1,7 @@
-package org.example
+package org.combocoach
 
-import org.example.service.ComboTrainer
-import org.example.ui.ConsoleUI
+import org.combocoach.service.ComboTrainer
+import org.combocoach.ui.ConsoleUI
 
 class App {
     val greeting: String

@@ -1,6 +1,6 @@
-package org.example.service
+package org.combocoach.service
 
-import org.example.domain.*
+import org.combocoach.domain.*
 import kotlin.random.Random
 
 /**

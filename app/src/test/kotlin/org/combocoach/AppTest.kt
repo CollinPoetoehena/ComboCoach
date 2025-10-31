@@ -1,4 +1,4 @@
-package org.example
+package org.combocoach
 
 import kotlin.test.Test
 import kotlin.test.assertNotNull

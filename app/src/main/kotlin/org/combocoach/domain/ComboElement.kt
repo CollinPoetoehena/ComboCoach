@@ -1,4 +1,4 @@
-package org.example.domain
+package org.combocoach.domain
 
 /**
  * Sealed class representing elements that can appear in a combination

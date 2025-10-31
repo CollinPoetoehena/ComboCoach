@@ -1,4 +1,4 @@
-package org.example.domain
+package org.combocoach.domain
 
 /**
  * Visual color cues for combinations

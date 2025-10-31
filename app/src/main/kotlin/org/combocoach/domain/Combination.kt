@@ -1,4 +1,4 @@
-package org.example.domain
+package org.combocoach.domain
 
 import java.util.UUID
 

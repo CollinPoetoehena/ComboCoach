@@ -1,7 +1,7 @@
-package org.example.ui
+package org.combocoach.ui
 
-import org.example.domain.Combination
-import org.example.service.ComboTrainer
+import org.combocoach.domain.Combination
+import org.combocoach.service.ComboTrainer
 
 /**
  * Console-based user interface for the ComboCoach application
