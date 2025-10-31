@@ -12,6 +12,8 @@ A Kotlin-based boxing training application that generates random combinations to
 - **Training History**: Track your generated combinations
 - **OOP Design**: Built with Kotlin best practices using proper object-oriented design
 
+TODO: update this with latest features
+
 ## Strike Notation
 
 - **1** - Jab
@@ -42,7 +44,7 @@ gradle init --type kotlin-application --dsl kotlin
 # Build the project:
 ./gradlew build
 
-# Run the project
+# Run the project, will be available at http://localhost:8080
 ./gradlew jsBrowserDevelopmentRun --continuous
 
 # Run tests:

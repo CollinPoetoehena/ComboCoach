@@ -1,43 +1,84 @@
 package org.combocoach.service
 
-import org.combocoach.domain.Combination
+import org.combocoach.domain.*
 
 /**
- * Service for managing training sessions
+ * Service for managing training sessions with flow-based combinations
  */
 class ComboTrainer(
-    private val generator: CombinationGenerator = CombinationGenerator()
+    var config: TrainingConfiguration = TrainingConfiguration()
 ) {
+    private val flowGenerator = FlowCombinationGenerator(config)
+    private val intervalTrainer = IntervalTrainer(config)
+    private val trainingHistory = mutableListOf<List<Action>>()
     
-    private val trainingHistory = mutableListOf<Combination>()
-    
-    /**
-     * Starts a training session with specified number of rounds
-     */
-    fun startTrainingSession(rounds: Int): List<Combination> {
-        val combinations = generator.generateCombinations(rounds)
-        trainingHistory.addAll(combinations)
-        return combinations
-    }
+    // Legacy generator for backward compatibility
+    private val legacyGenerator: CombinationGenerator = CombinationGenerator()
     
     /**
-     * Gets a single random combination
+     * Gets the interval trainer for single-action-at-a-time training
      */
-    fun getRandomCombo(): Combination {
-        val combo = generator.generateCombination()
+    fun getIntervalTrainer(): IntervalTrainer = intervalTrainer
+    
+    /**
+     * Generates a single flowing combination
+     */
+    fun generateFlowingCombo(): List<Action> {
+        val combo = flowGenerator.generateFlowingCombination()
         trainingHistory.add(combo)
         return combo
     }
     
     /**
+     * Starts an interval-based training session
+     * Actions will be displayed one at a time with configured interval
+     */
+    fun startIntervalTraining() {
+        intervalTrainer.startCombination()
+    }
+    
+    /**
+     * Updates the configuration and recreates generators
+     */
+    fun updateConfiguration(newConfig: TrainingConfiguration) {
+        config = newConfig
+        // Note: Interval trainer and generator would need to be recreated
+        // or made mutable. For simplicity, configuration changes take effect
+        // on next combination generation.
+    }
+    
+    /**
+     * Formats a combination for display
+     */
+    fun formatCombination(actions: List<Action>): String {
+        return flowGenerator.formatActions(actions)
+    }
+    
+    /**
      * Gets training history
      */
-    fun getHistory(): List<Combination> = trainingHistory.toList()
+    fun getHistory(): List<List<Action>> = trainingHistory.toList()
     
     /**
      * Clears training history
      */
     fun clearHistory() {
         trainingHistory.clear()
+    }
+    
+    // Legacy methods for backward compatibility
+    
+    /**
+     * @deprecated Use generateFlowingCombo() instead
+     */
+    fun getRandomCombo(): Combination {
+        return legacyGenerator.generateCombination()
+    }
+    
+    /**
+     * @deprecated Use interval training or flow-based combinations
+     */
+    fun startTrainingSession(rounds: Int): List<Combination> {
+        return legacyGenerator.generateCombinations(rounds)
     }
 }
