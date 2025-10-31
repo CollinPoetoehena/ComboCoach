@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComboCoach - Boxing Training Companion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff;
+        }
+
+        #root {
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #888;
+        }
+
+        /* Strike Legend */
+        .legend-container {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .legend-container h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #4ecdc4;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            padding: 8px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+
+        .strike-number {
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-right: 5px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-container label {
+            font-size: 16px;
+        }
+
+        .input-container input {
+            padding: 10px;
+            font-size: 16px;
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #4ecdc4;
+            color: #1a1a1a;
+        }
+
+        .btn-primary:hover {
+            background-color: #45b8b0;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: #ff6b6b;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background-color: #f9ca24;
+            color: #1a1a1a;
+        }
+
+        .btn-warning:hover {
+            background-color: #f0b90b;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #666;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #555;
+            transform: translateY(-2px);
+        }
+
+        /* Combinations Display */
+        .combos-display {
+            margin-top: 30px;
+        }
+
+        .combos-title {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #4ecdc4;
+        }
+
+        .combos-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .combo-card {
+            background-color: #2a2a2a;
+            border: 3px solid;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease;
+        }
+
+        .combo-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .combo-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .combo-card-header h3 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .combo-color-badge {
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .combo-elements {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .element-badge {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            margin-top: 50px;
+            padding: 40px;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+        }
+
+        .welcome-message p {
+            font-size: 20px;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 36px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">
+        <div class="loading">🥊 Loading ComboCoach...</div>
+    </div>
+    <script src="combocoach.js"></script>
+</body>
+
+</html>

@@ -39,8 +39,11 @@ gradle init --type kotlin-application --dsl kotlin
 ### Running the Application
 
 ```sh
-# Run the project:
-./gradlew run
+# Build the project:
+./gradlew build
+
+# Run the project
+./gradlew jsBrowserDevelopmentRun --continuous
 
 # Run tests:
 ./gradlew test
@@ -48,14 +51,7 @@ gradle init --type kotlin-application --dsl kotlin
 
 ## Usage
 
-When you run the application, you'll see a menu with the following options:
-
-1. **Generate Single Combination** - Get one random combination
-2. **Start Training Session** - Generate multiple combinations for a training session
-3. **View Training History** - See all previously generated combinations
-4. **Clear History** - Reset your training history
-5. **Show Legend** - Display the notation guide
-6. **Exit** - Close the application
+TODO: generate with AI
 
 ## Architecture
 
