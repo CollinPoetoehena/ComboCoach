@@ -3,85 +3,152 @@ package org.combocoach.ui.components
 import kotlinx.browser.document
 import org.combocoach.domain.Action
 import org.combocoach.domain.TrainingConfiguration
+import org.combocoach.ui.components.atoms.ButtonAtom
+import org.combocoach.ui.components.molecules.*
 import org.w3c.dom.HTMLElement
+import org.w3c.dom.events.Event
 
 /**
- * Manages the main display area where training sessions are shown
+ * Main display area component following atomic design principles.
+ * Contains two main sections:
+ * 1. Control Panel - with configuration, start, stop, and preview buttons
+ * 2. Content Area - displays active content (config form, training session, or preview)
  */
 object DisplayAreaComponent {
     
-    fun createInitial(): HTMLElement {
+    enum class DisplayMode {
+        WELCOME,
+        CONFIGURATION,
+        TRAINING,
+        PREVIEW
+    }
+    
+    private var currentMode = DisplayMode.WELCOME
+    
+    fun create(
+        config: TrainingConfiguration,
+        onConfiguration: (Event) -> Unit,
+        onStart: (Event) -> Unit,
+        onStop: (Event) -> Unit,
+        onPreview: (Event) -> Unit
+    ): HTMLElement {
         return document.createElement("div").apply {
             setAttribute("class", "display-area")
             setAttribute("id", "display-area")
+            
+            // Control Panel Section
+            appendChild(ControlPanelMolecule.create(
+                onConfiguration = {
+                    showConfiguration(config)
+                    onConfiguration(it)
+                },
+                onStart = onStart,
+                onStop = onStop,
+                onPreview = onPreview
+            ))
+            
+            // Content Area Section
+            appendChild(createContentArea())
+        } as HTMLElement
+    }
+    
+    private fun createContentArea(): HTMLElement {
+        return document.createElement("div").apply {
+            setAttribute("class", "content-area")
+            setAttribute("id", "content-area")
+            
+            // Initial welcome message
             innerHTML = """
                 <div class="welcome-message">
-                    <p>👊 Configure your training and click "Start Training"!</p>
+                    <p>👊 Click "Configuration" to adjust settings, or "Start Training" to begin!</p>
                 </div>
             """
         } as HTMLElement
     }
     
-    fun showTrainingInProgress() {
-        val displayArea = document.getElementById("display-area")
-        displayArea?.innerHTML = """
-            <div class="training-in-progress">
-                <div class="stats-row">
-                    <div class="stat-box">
-                        <div class="stat-label">Combos Completed</div>
-                        <div class="stat-value" id="combos-completed">0</div>
-                    </div>
-                </div>
-                <div id="current-action-display" class="current-action-display"></div>
-                <div id="progress-bar-container" class="progress-bar-container">
-                    <div id="progress-bar" class="progress-bar"></div>
-                </div>
-                <div id="combination-preview" class="combination-preview"></div>
-            </div>
-        """
+    /**
+     * Show configuration form in the content area
+     */
+    fun showConfiguration(config: TrainingConfiguration) {
+        currentMode = DisplayMode.CONFIGURATION
+        val contentArea = document.getElementById("content-area")
+        contentArea?.innerHTML = ""
+        contentArea?.appendChild(ConfigFormMolecule.create(config))
+        
+        // Setup listeners after DOM is created
+        ConfigFormMolecule.setupModeSelectListener()
     }
     
-    fun showStoppedMessage() {
-        val displayArea = document.getElementById("display-area")
-        displayArea?.innerHTML = """
+    /**
+     * Show training session with stats and action display
+     */
+    fun showTrainingSession() {
+        currentMode = DisplayMode.TRAINING
+        val contentArea = document.getElementById("content-area")
+        contentArea?.innerHTML = ""
+        
+        val trainingContainer = document.createElement("div").apply {
+            setAttribute("class", "training-container")
+            
+            appendChild(TrainingStatsMolecule.create())
+            appendChild(document.createElement("div").apply {
+                setAttribute("id", "current-action-display")
+                setAttribute("class", "current-action-display")
+            })
+            appendChild(document.createElement("div").apply {
+                setAttribute("class", "progress-bar-container")
+                setAttribute("id", "progress-bar-container")
+                innerHTML = """<div id="progress-bar" class="progress-bar"></div>"""
+            })
+            appendChild(document.createElement("div").apply {
+                setAttribute("id", "combination-preview")
+                setAttribute("class", "combination-preview")
+            })
+        } as HTMLElement
+        
+        contentArea?.appendChild(trainingContainer)
+        ButtonAtom.setEnabled("start-btn", false)
+    }
+    
+    /**
+     * Show stopped message
+     */
+    fun showStopped() {
+        currentMode = DisplayMode.WELCOME
+        val contentArea = document.getElementById("content-area")
+        contentArea?.innerHTML = """
             <div class="welcome-message">
                 <p>⏹️ Training stopped</p>
                 <p class="hint">Click "Start Training" to begin again</p>
             </div>
         """
+        ButtonAtom.setEnabled("start-btn", true)
     }
     
+    /**
+     * Show combo preview
+     */
     fun showPreview(combo: List<Action>, formatted: String) {
-        val displayArea = document.getElementById("display-area")
-        displayArea?.innerHTML = """
-            <div class="preview-display">
-                <h3>Generated Combination Preview</h3>
-                <div class="combo-preview-text">${formatted}</div>
-                <div class="combo-details">
-                    ${combo.mapIndexed { index, action ->
-                        val type = if (action.isOffensive()) "offensive" else "defensive"
-                        """<span class="action-badge action-$type">${action.toNumber()} - ${action.displayName()}</span>"""
-                    }.joinToString("")}
-                </div>
-            </div>
-        """
+        currentMode = DisplayMode.PREVIEW
+        val contentArea = document.getElementById("content-area")
+        contentArea?.innerHTML = ""
+        contentArea?.appendChild(PreviewDisplayMolecule.create(combo, formatted))
     }
     
+    /**
+     * Display current action during training
+     */
     fun displayAction(action: Action, index: Int, total: Int) {
         val currentActionDisplay = document.getElementById("current-action-display")
-        val type = if (action.isOffensive()) "offensive" else "defensive"
-        
-        currentActionDisplay?.innerHTML = """
-            <div class="action-card action-${type}">
-                <div class="action-number-large">${action.toNumber()}</div>
-                <div class="action-name">${action.displayName()}</div>
-                <div class="action-counter">Action $index of $total</div>
-            </div>
-        """
+        currentActionDisplay?.innerHTML = ""
+        currentActionDisplay?.appendChild(ActionCardMolecule.create(action, index, total))
         
         updateProgressBar(index, total)
     }
     
+    /**
+     * Update combination preview text during training
+     */
     fun updateCombinationPreview(actions: List<Action>, config: TrainingConfiguration) {
         val preview = document.getElementById("combination-preview")
         val formattedSoFar = if (config.useNumberNotation) {
@@ -92,21 +159,29 @@ object DisplayAreaComponent {
         preview?.innerHTML = """<div class="preview-text">Combination: $formattedSoFar</div>"""
     }
     
+    /**
+     * Update completed combos counter
+     */
     fun updateCompletedCombos(comboNumber: Int) {
-        val statsValue = document.getElementById("combos-completed")
-        statsValue?.textContent = comboNumber.toString()
+        TrainingStatsMolecule.updateCompletedCombos(comboNumber)
     }
     
+    /**
+     * Show waiting message between combinations
+     */
     fun showWaitingMessage(secondsRemaining: Int) {
         val currentActionDisplay = document.getElementById("current-action-display")
-        currentActionDisplay?.innerHTML = """
-            <div class="waiting-card">
-                <div class="waiting-timer">${secondsRemaining}</div>
-                <div class="waiting-text">Next combination starting...</div>
-            </div>
-        """
+        currentActionDisplay?.innerHTML = ""
+        currentActionDisplay?.appendChild(ActionCardMolecule.showWaiting(secondsRemaining))
         
         resetProgressBar()
+    }
+    
+    /**
+     * Read configuration from the form
+     */
+    fun readConfiguration(): TrainingConfiguration {
+        return ConfigFormMolecule.readConfiguration()
     }
     
     private fun updateProgressBar(index: Int, total: Int) {

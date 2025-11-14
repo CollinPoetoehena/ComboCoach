@@ -14,7 +14,6 @@ class ComboCoachApp(private val rootElement: Element) {
     private var config = TrainingConfiguration()
     private val trainer = ComboTrainer(config)
     private var currentDisplayedActions = mutableListOf<Action>()
-    private var isConfigExpanded = false
     private var isLegendExpanded = false
     
     init {
@@ -34,12 +33,8 @@ class ComboCoachApp(private val rootElement: Element) {
     private fun attachEventListeners() {
         // Apply configuration button
         document.getElementById("apply-config-btn")?.addEventListener("click", {
-            console.log("Apply Configuration button clicked!")
             applyConfiguration()
         })
-        
-        // Mode select listener to show/hide offense ratio
-        ConfigPanelComponent.setupModeSelectListener()
     }
     
     /**
@@ -74,12 +69,9 @@ class ComboCoachApp(private val rootElement: Element) {
             setAttribute("class", "container")
             // Build UI components in the order they are displayed
             appendChild(HeaderComponent.create())
-            appendChild(ConfigPanelComponent.create(config, isConfigExpanded) {
-                isConfigExpanded = !isConfigExpanded
-                render()
-            })
-            appendChild(DisplayAreaComponent.createInitial())
-            appendChild(ControlPanelComponent.create(
+            appendChild(DisplayAreaComponent.create(
+                config = config,
+                onConfiguration = { showConfiguration() },
                 onStart = { startIntervalTraining() },
                 onStop = { stopTraining() },
                 onPreview = { generatePreview() }
@@ -89,6 +81,10 @@ class ComboCoachApp(private val rootElement: Element) {
                 render()
             })
         } as HTMLElement
+    }
+    
+    private fun showConfiguration() {
+        DisplayAreaComponent.showConfiguration(config)
     }
     
     private fun applyConfiguration() {
@@ -108,9 +104,6 @@ class ComboCoachApp(private val rootElement: Element) {
             doStartTraining()
         }
         
-        isConfigExpanded = false
-        render()
-        
         NotificationManager.success("Configuration applied!")
     }
     
@@ -123,22 +116,17 @@ class ComboCoachApp(private val rootElement: Element) {
     }
     
     private fun doStartTraining() {
-        // Clear any previous state
         currentDisplayedActions.clear()
-        // Update UI to reflect training state
-        DisplayAreaComponent.showTrainingInProgress()
-        ControlPanelComponent.disableStartButton()
+        DisplayAreaComponent.showTrainingSession()
         trainer.startIntervalTraining()
     }
     
     private fun stopTraining() {
         trainer.getIntervalTrainer().stop()
-        ControlPanelComponent.enableStartButton()
-        DisplayAreaComponent.showStoppedMessage()
+        DisplayAreaComponent.showStopped()
     }
     
     private fun generatePreview() {
-        applyConfiguration()
         val combo = trainer.generateFlowingCombo()
         val formatted = trainer.formatCombination(combo)
         DisplayAreaComponent.showPreview(combo, formatted)

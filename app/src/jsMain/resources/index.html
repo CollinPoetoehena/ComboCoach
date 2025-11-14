@@ -301,22 +301,95 @@
 
         /* Display Area */
         .display-area {
-            min-height: 300px;
+            min-height: 400px;
             background-color: #2a2a2a;
             border-radius: 10px;
             padding: 30px;
             margin-bottom: 25px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
         }
 
-        .training-in-progress {
+        /* Control Panel within Display Area */
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Content Area within Display Area */
+        .content-area {
+            flex: 1;
+            min-height: 250px;
+            background-color: #1f1f1f;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        /* Training Container */
+        .training-container {
             text-align: center;
         }
 
-        .training-in-progress h3 {
+        .training-container h3 {
             color: #4ecdc4;
             margin-bottom: 30px;
             font-size: 24px;
+        }
+
+        /* Config Form within Content Area */
+        .config-form {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .config-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .config-item label {
+            font-size: 14px;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        .config-item input[type="number"],
+        .config-item select {
+            padding: 10px;
+            font-size: 15px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #2a2a2a;
+            color: #fff;
+        }
+
+        .config-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        .config-item-checkbox label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
         }
 
         .current-action-display {
