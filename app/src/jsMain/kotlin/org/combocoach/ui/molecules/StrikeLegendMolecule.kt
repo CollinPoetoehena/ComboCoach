@@ -1,40 +1,19 @@
-package org.combocoach.ui.components
+package org.combocoach.ui.molecules
 
 import kotlinx.browser.document
 import org.w3c.dom.HTMLElement
 
 /**
- * Creates the strike notation legend/reference panel
+ * Strike notation legend/reference molecule
+ * Displays the standard boxing numbering system
  */
-object StrikeLegendComponent {
+object StrikeLegendMolecule {
     
-    fun create(isExpanded: Boolean, onToggle: () -> Unit): HTMLElement {
+    fun create(): HTMLElement {
         return document.createElement("div").apply {
-            setAttribute("class", "legend-container")
-            
-            // Header with toggle
-            appendChild(createHeader(onToggle))
-            
-            // Collapsible content
-            if (isExpanded) {
-                appendChild(createContent())
-            }
-        } as HTMLElement
-    }
-    
-    private fun createHeader(onToggle: () -> Unit): HTMLElement {
-        return document.createElement("div").apply {
-            setAttribute("class", "legend-header")
+            setAttribute("class", "strike-legend")
             innerHTML = """
                 <h2>📖 Strike Notation Reference</h2>
-            """
-        } as HTMLElement
-    }
-    
-    private fun createContent(): HTMLElement {
-        return document.createElement("div").apply {
-            setAttribute("class", "legend-content")
-            innerHTML = """
                 <p class="legend-description">
                     Standard boxing numbering system 
                     (<a href="https://expertboxing.com/the-beginners-guide-to-boxing" target="_blank">Learn More</a>)

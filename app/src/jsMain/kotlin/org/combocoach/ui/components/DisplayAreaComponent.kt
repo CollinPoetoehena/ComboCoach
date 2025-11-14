@@ -68,7 +68,7 @@ object DisplayAreaComponent {
         currentMode = DisplayMode.STRIKE_LEGEND
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
-        contentArea?.appendChild(org.combocoach.ui.components.StrikeLegendComponent.create(isExpanded = true, onToggle = {}))
+        contentArea?.appendChild(StrikeLegendMolecule.create())
     }
     
     private fun createContentArea(): HTMLElement {
