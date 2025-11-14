@@ -17,10 +17,12 @@ class ComboCoachApp(private val rootElement: Element) {
     private var isLegendExpanded = false
     
     init {
+        // Setup interval trainer on initialization
         setupIntervalTrainer()
     }
     
     fun render() {
+        // Clear root and build main container (this contains all UI components)
         rootElement.innerHTML = ""
         rootElement.appendChild(createMainContainer())
         
@@ -47,6 +49,11 @@ class ComboCoachApp(private val rootElement: Element) {
         })
     }
     
+    /**
+     * Setup callbacks for interval trainer to update UI during training
+     * These callbacks will be called during interval training sessions
+     * and should update the display area accordingly
+     */
     private fun setupIntervalTrainer() {
         val intervalTrainer = trainer.getIntervalTrainer()
         
@@ -66,11 +73,11 @@ class ComboCoachApp(private val rootElement: Element) {
     private fun createMainContainer(): HTMLElement {
         return document.createElement("div").apply {
             setAttribute("class", "container")
-            
+            // Build UI components in the order they are displayed
             appendChild(createHeader())
+            appendChild(createConfigPanel())
             appendChild(createDisplayArea())
             appendChild(createControlPanel())
-            appendChild(createConfigPanel())
             appendChild(createStrikeLegend())
         } as HTMLElement
     }
@@ -83,37 +90,7 @@ class ComboCoachApp(private val rootElement: Element) {
             """
         } as HTMLElement
     }
-    
-    private fun createDisplayArea(): HTMLElement {
-        return document.createElement("div").apply {
-            setAttribute("class", "display-area")
-            setAttribute("id", "display-area")
-            innerHTML = """
-                <div class="welcome-message">
-                    <p>👊 Configure your training and click "Start Training"!</p>
-                </div>
-            """
-        } as HTMLElement
-    }
-    
-    private fun createControlPanel(): HTMLElement {
-        return document.createElement("div").apply {
-            setAttribute("class", "controls")
-            
-            appendChild(createButton("▶️ Start Training", "btn-primary", "start-btn") {
-                startIntervalTraining()
-            })
-            
-            appendChild(createButton("⏹️ Stop", "btn-danger", "stop-btn") {
-                stopTraining()
-            })
-            
-            appendChild(createButton("👁️ Preview Combo", "btn-secondary") {
-                generatePreview()
-            })
-        } as HTMLElement
-    }
-    
+
     private fun createConfigPanel(): HTMLElement {
         return document.createElement("div").apply {
             setAttribute("class", "config-panel")
@@ -195,6 +172,36 @@ class ComboCoachApp(private val rootElement: Element) {
                 </div>
                 <button id="apply-config-btn" class="btn btn-primary">✓ Apply Configuration</button>
             """
+        } as HTMLElement
+    }
+    
+    private fun createDisplayArea(): HTMLElement {
+        return document.createElement("div").apply {
+            setAttribute("class", "display-area")
+            setAttribute("id", "display-area")
+            innerHTML = """
+                <div class="welcome-message">
+                    <p>👊 Configure your training and click "Start Training"!</p>
+                </div>
+            """
+        } as HTMLElement
+    }
+    
+    private fun createControlPanel(): HTMLElement {
+        return document.createElement("div").apply {
+            setAttribute("class", "controls")
+            
+            appendChild(createButton("▶️ Start Training", "btn-primary", "start-btn") {
+                startIntervalTraining()
+            })
+            
+            appendChild(createButton("⏹️ Stop", "btn-danger", "stop-btn") {
+                stopTraining()
+            })
+            
+            appendChild(createButton("👁️ Preview Combo", "btn-secondary") {
+                generatePreview()
+            })
         } as HTMLElement
     }
     
@@ -322,6 +329,7 @@ class ComboCoachApp(private val rootElement: Element) {
         
         console.log("Reading config - Action Interval: ${actionInterval}ms, Combo Interval: ${comboInterval}ms")
         
+        // Create new configuration object based on input values
         config = TrainingConfiguration(
             actionIntervalMs = actionInterval.toInt(),
             combinationIntervalMs = comboInterval.toInt(),
@@ -335,7 +343,9 @@ class ComboCoachApp(private val rootElement: Element) {
         
         console.log("New config created: actionIntervalMs=${config.actionIntervalMs}, combinationIntervalMs=${config.combinationIntervalMs}")
         
+        // Update trainer with new configuration
         trainer.updateConfiguration(config)
+        // Re-setup interval trainer callbacks after configuration update
         setupIntervalTrainer()
         
         console.log("Configuration updated and callbacks re-setup")
