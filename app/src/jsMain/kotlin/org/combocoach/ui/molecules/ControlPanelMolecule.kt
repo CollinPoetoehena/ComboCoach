@@ -1,7 +1,7 @@
-package org.combocoach.ui.components.molecules
+package org.combocoach.ui.molecules
 
 import kotlinx.browser.document
-import org.combocoach.ui.components.atoms.ButtonAtom
+import org.combocoach.ui.atoms.ButtonAtom
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 

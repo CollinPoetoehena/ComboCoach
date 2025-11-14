@@ -3,8 +3,8 @@ package org.combocoach.ui.components
 import kotlinx.browser.document
 import org.combocoach.domain.Action
 import org.combocoach.domain.TrainingConfiguration
-import org.combocoach.ui.components.atoms.ButtonAtom
-import org.combocoach.ui.components.molecules.*
+import org.combocoach.ui.atoms.ButtonAtom
+import org.combocoach.ui.molecules.*
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
 

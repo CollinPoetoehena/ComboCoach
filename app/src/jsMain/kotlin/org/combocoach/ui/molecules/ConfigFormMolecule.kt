@@ -1,4 +1,4 @@
-package org.combocoach.ui.components.molecules
+package org.combocoach.ui.molecules
 
 import kotlinx.browser.document
 import org.combocoach.domain.Stance

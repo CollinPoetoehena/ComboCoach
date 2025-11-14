@@ -1,4 +1,4 @@
-package org.combocoach.ui.components.atoms
+package org.combocoach.ui.atoms
 
 import kotlinx.browser.document
 import org.w3c.dom.HTMLElement
