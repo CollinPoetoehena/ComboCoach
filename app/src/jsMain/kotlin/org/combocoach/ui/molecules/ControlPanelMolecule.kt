@@ -22,7 +22,12 @@ object ControlPanelMolecule {
 
             appendChild(ButtonAtom.create("⚙️ Configuration", "btn btn-secondary", "config-btn", onConfiguration))
             appendChild(ButtonAtom.create("▶️ Start Training", "btn btn-primary", "start-btn", onStart))
-            appendChild(ButtonAtom.create("⏹️ Stop", "btn btn-danger", "stop-btn", onStop))
+            
+            // Create stop button but hide it initially (training hasn't started yet)
+            appendChild(ButtonAtom.create("⏹️ Stop", "btn btn-danger", "stop-btn", onStop).apply {
+                setAttribute("style", "display: none;")
+            })
+            
             appendChild(ButtonAtom.create("👁️ Preview Combo", "btn btn-secondary", "preview-btn", onPreview))
             appendChild(ButtonAtom.create("🥊 Strike Notation", "btn btn-secondary", "strike-legend-btn", onStrikeLegend))
         } as HTMLElement

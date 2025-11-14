@@ -50,9 +50,8 @@ object DisplayAreaComponent {
                     if (currentMode == DisplayMode.CONFIGURATION) {
                         showWelcome()
                     } else {
-                        showConfiguration(config, onApplyConfig)
+                        onConfiguration(it)  // Call the app's handler which will call showConfiguration
                     }
-                    onConfiguration(it)
                 },
                 onStart = onStart,
                 onStop = onStop,
@@ -76,9 +75,6 @@ object DisplayAreaComponent {
 
             // Content Area Section
             appendChild(createContentArea())
-            
-            // Initialize button states
-            updateTrainingButtons()
         } as HTMLElement
     }
 
