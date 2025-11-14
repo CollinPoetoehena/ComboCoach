@@ -34,16 +34,13 @@ class ComboCoachApp(private val rootElement: Element) {
     }
     
     /**
-     * Attach event listeners to various UI elements in this app (event listeners 
-     * are also applied in other elements, such as separate components/molecules/atoms in 
-     * their own methods)
+     * Attach event listeners to various UI elements in this app
+     * 
+     * Event listeners for dynamically created elements are attached in their respective 
+     * creation methods (otherwise they would not exist yet (cannot attach to non-existing elements))
      */
     private fun attachEventListeners() {
-        // Apply configuration button
-        document.getElementById("apply-config-btn")?.addEventListener("click", {
-            console.log("Apply Configuration button clicked!")
-            applyConfiguration()
-        })
+        // Currently no global event listeners needed, however, function is here for future use (already called in render)
     }
     
     /**
@@ -81,6 +78,7 @@ class ComboCoachApp(private val rootElement: Element) {
             appendChild(DisplayAreaComponent.create(
                 config = config,
                 onConfiguration = { showConfiguration() },
+                onApplyConfig = { applyConfiguration() },
                 onStart = { startIntervalTraining() },
                 onStop = { stopTraining() },
                 onPreview = { generatePreview() }
@@ -122,7 +120,7 @@ class ComboCoachApp(private val rootElement: Element) {
     private fun showConfiguration() {
         // Stop the interval trainer when showing configuration to make changes
         trainer.getIntervalTrainer().stop()
-        DisplayAreaComponent.showConfiguration(config)
+        DisplayAreaComponent.showConfiguration(config) { applyConfiguration() }
     }
     
     private fun startIntervalTraining() {

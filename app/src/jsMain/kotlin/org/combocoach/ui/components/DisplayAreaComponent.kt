@@ -24,14 +24,19 @@ object DisplayAreaComponent {
     }
     
     private var currentMode = DisplayMode.WELCOME
+    private var onApplyCallback: (() -> Unit)? = null
     
     fun create(
         config: TrainingConfiguration,
         onConfiguration: (Event) -> Unit,
+        onApplyConfig: () -> Unit,
         onStart: (Event) -> Unit,
         onStop: (Event) -> Unit,
         onPreview: (Event) -> Unit
     ): HTMLElement {
+        // Store the apply callback for later use
+        onApplyCallback = onApplyConfig
+        
         return document.createElement("div").apply {
             setAttribute("class", "display-area")
             setAttribute("id", "display-area")
@@ -39,7 +44,7 @@ object DisplayAreaComponent {
             // Control Panel Section
             appendChild(ControlPanelMolecule.create(
                 onConfiguration = {
-                    showConfiguration(config)
+                    showConfiguration(config, onApplyConfig)
                     onConfiguration(it)
                 },
                 onStart = onStart,
@@ -69,7 +74,7 @@ object DisplayAreaComponent {
     /**
      * Show configuration form in the content area
      */
-    fun showConfiguration(config: TrainingConfiguration) {
+    fun showConfiguration(config: TrainingConfiguration, onApply: () -> Unit) {
         currentMode = DisplayMode.CONFIGURATION
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
@@ -77,6 +82,11 @@ object DisplayAreaComponent {
         
         // Setup listeners after DOM is created
         ConfigFormMolecule.setupModeSelectListener()
+        
+        // Attach apply button listener
+        document.getElementById("apply-config-btn")?.addEventListener("click", {
+            onApply()
+        })
     }
     
     /**
