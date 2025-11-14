@@ -66,7 +66,7 @@ object ControlPanelMolecule {
         return document.createElement("div").apply {
             setAttribute("class", "info-controls")
             
-            appendChild(ButtonAtom.create("⚙️ Configuration", "btn btn-secondary", "config-btn", onConfiguration))
+            appendChild(ButtonAtom.create("⚙️ Config", "btn btn-secondary", "config-btn", onConfiguration))
             appendChild(ButtonAtom.create("👁️ Preview", "btn btn-secondary", "preview-btn", onPreview))
             appendChild(ButtonAtom.create("🥊 Strikes", "btn btn-secondary", "strike-legend-btn", onStrikeLegend))
         } as HTMLElement
