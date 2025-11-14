@@ -1,24 +1,20 @@
 package org.combocoach.ui
 
 import kotlinx.browser.document
-import org.combocoach.domain.*
-import org.combocoach.service.ComboTrainer
 import org.combocoach.ui.components.*
 import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
 
 /**
- * Main application class that orchestrates all UI components and manages application state
+ * Main application class that orchestrates all UI components and manages application state.
+ * Delegates training logic to TrainerManager for better separation of concerns.
  */
 class ComboCoachApp(private val rootElement: Element) {
-    private var config = TrainingConfiguration()
-    private val trainer = ComboTrainer(config)
-    private var currentDisplayedActions = mutableListOf<Action>()
+    private val trainerManager = TrainerManager()
     private var isLegendExpanded = false
     
     init {
-        // Setup interval trainer on initialization
-        setupIntervalTrainer()
+        setupTrainerCallbacks()
     }
     
     /**
@@ -28,41 +24,25 @@ class ComboCoachApp(private val rootElement: Element) {
         // Clear root and build main container (this contains all UI components)
         rootElement.innerHTML = ""
         rootElement.appendChild(createMainContainer())
-        
-        // Attach event listeners after DOM is created
-        attachEventListeners()
     }
     
     /**
-     * Attach event listeners to various UI elements in this app
-     * 
-     * Event listeners for dynamically created elements are attached in their respective 
-     * creation methods (otherwise they would not exist yet (cannot attach to non-existing elements))
+     * Setup callbacks from trainer manager to update UI
      */
-    private fun attachEventListeners() {
-        // Currently no global event listeners needed, however, function is here for future use (already called in render)
-    }
-    
-    /**
-     * Setup callbacks for interval trainer to update UI during training
-     * These callbacks will be called during interval training sessions
-     * and should update the display area accordingly
-     */
-    private fun setupIntervalTrainer() {
-        val intervalTrainer = trainer.getIntervalTrainer()
-        
-        intervalTrainer.onActionDisplay = { action, index, total, _ ->
-            currentDisplayedActions.add(action)
+    private fun setupTrainerCallbacks() {
+        trainerManager.onActionDisplay = { action, index, total ->
             DisplayAreaComponent.displayAction(action, index, total)
-            DisplayAreaComponent.updateCombinationPreview(currentDisplayedActions, config)
+            DisplayAreaComponent.updateCombinationPreview(
+                trainerManager.getCurrentDisplayedActions(),
+                trainerManager.getConfig()
+            )
         }
         
-        intervalTrainer.onCombinationComplete = { comboNumber ->
+        trainerManager.onCombinationComplete = { comboNumber ->
             DisplayAreaComponent.updateCompletedCombos(comboNumber)
-            currentDisplayedActions.clear()
         }
         
-        intervalTrainer.onWaitingBetweenCombinations = { secondsRemaining ->
+        trainerManager.onWaitingBetweenCombinations = { secondsRemaining ->
             DisplayAreaComponent.showWaitingMessage(secondsRemaining)
         }
     }
@@ -73,13 +53,12 @@ class ComboCoachApp(private val rootElement: Element) {
     private fun createMainContainer(): HTMLElement {
         return document.createElement("div").apply {
             setAttribute("class", "container")
-            // Build UI components in the order they are displayed
             appendChild(HeaderComponent.create())
             appendChild(DisplayAreaComponent.create(
-                config = config,
+                config = trainerManager.getConfig(),
                 onConfiguration = { showConfiguration() },
                 onApplyConfig = { applyConfiguration() },
-                onStart = { startIntervalTraining() },
+                onStart = { startTraining() },
                 onStop = { stopTraining() },
                 onPreview = { generatePreview() }
             ))
@@ -91,59 +70,47 @@ class ComboCoachApp(private val rootElement: Element) {
     }
     
     /**
-     * Apply configuration changes from the UI to the trainer instance
-     * 
-     * The configuration is managed in this central app class to ensure
-     * consistency across components and services. So, this is the single 
-     * source of truth for the configuration.
+     * Apply configuration changes from the UI
      */
     private fun applyConfiguration() {
-        // Always stop training when applying new configuration
-        trainer.getIntervalTrainer().stop()
-        
-        // Read new configuration from UI and update the trainer instance
-        config = DisplayAreaComponent.readConfiguration()
-        console.log("Applying configuration: $config")
-        trainer.updateConfiguration(config)
-        // Re-setup interval trainer callbacks after configuration update
-        setupIntervalTrainer()
-        
-        // TODO: maybe make a feature later to auto-restart training if it was running
-        // can then at the start add trainer.getIntervalTrainer().isActive() and then only stop then
-        // if (wasRunning) {
-        //     doStartTraining()
-        // }
-        
-        NotificationManager.success("Configuration applied!")
+        trainerManager.stopTraining()
+        val newConfig = DisplayAreaComponent.readConfiguration()
+        trainerManager.updateConfiguration(newConfig)
     }
 
+    /**
+     * Show configuration panel
+     */
     private fun showConfiguration() {
-        // Stop the interval trainer when showing configuration to make changes
-        trainer.getIntervalTrainer().stop()
-        DisplayAreaComponent.showConfiguration(config) { applyConfiguration() }
+        trainerManager.stopTraining()
+        DisplayAreaComponent.showConfiguration(trainerManager.getConfig()) { 
+            applyConfiguration() 
+        }
     }
     
-    private fun startIntervalTraining() {
-        config = DisplayAreaComponent.readConfiguration()
-        trainer.updateConfiguration(config)
-        setupIntervalTrainer()
-        doStartTraining()
-    }
-    
-    private fun doStartTraining() {
-        currentDisplayedActions.clear()
+    /**
+     * Start interval training
+     */
+    private fun startTraining() {
+        val newConfig = DisplayAreaComponent.readConfiguration()
+        trainerManager.updateConfiguration(newConfig)
         DisplayAreaComponent.showTrainingSession()
-        trainer.startIntervalTraining()
+        trainerManager.startTraining()
     }
     
+    /**
+     * Stop training
+     */
     private fun stopTraining() {
-        trainer.getIntervalTrainer().stop()
+        trainerManager.stopTraining()
         DisplayAreaComponent.showStopped()
     }
     
+    /**
+     * Generate and display preview
+     */
     private fun generatePreview() {
-        val combo = trainer.generateFlowingCombo()
-        val formatted = trainer.formatCombination(combo)
+        val (combo, formatted) = trainerManager.generatePreview()
         DisplayAreaComponent.showPreview(combo, formatted)
     }
 }

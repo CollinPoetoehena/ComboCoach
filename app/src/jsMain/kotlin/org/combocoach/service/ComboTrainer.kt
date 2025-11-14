@@ -12,9 +12,6 @@ class ComboTrainer(
     private var intervalTrainer = IntervalTrainer(config)
     private val trainingHistory = mutableListOf<List<Action>>()
     
-    // Legacy generator for backward compatibility
-    private val legacyGenerator: CombinationGenerator = CombinationGenerator()
-    
     /**
      * Gets the interval trainer for single-action-at-a-time training
      */
@@ -77,21 +74,5 @@ class ComboTrainer(
      */
     fun clearHistory() {
         trainingHistory.clear()
-    }
-    
-    // Legacy methods for backward compatibility
-    
-    /**
-     * @deprecated Use generateFlowingCombo() instead
-     */
-    fun getRandomCombo(): Combination {
-        return legacyGenerator.generateCombination()
-    }
-    
-    /**
-     * @deprecated Use interval training or flow-based combinations
-     */
-    fun startTrainingSession(rounds: Int): List<Combination> {
-        return legacyGenerator.generateCombinations(rounds)
     }
 }
