@@ -303,7 +303,7 @@ class ComboCoachApp(private val rootElement: Element) {
         isConfigExpanded = false
         render()
         
-        showNotification("Configuration applied! ✓")
+        showNotification("Configuration applied!", NotificationType.SUCCESS)
     }
     
     private fun startIntervalTraining() {
@@ -472,7 +472,12 @@ class ComboCoachApp(private val rootElement: Element) {
         btn?.setAttribute("style", "opacity: 1; cursor: pointer;")
     }
     
-    private fun showNotification(message: String) {
-        console.log("Notification: $message")
+    private fun showNotification(message: String, type: NotificationType = NotificationType.SUCCESS) {
+        when (type) {
+            NotificationType.SUCCESS -> NotificationManager.success(message)
+            NotificationType.ERROR -> NotificationManager.error(message)
+            NotificationType.INFO -> NotificationManager.info(message)
+            NotificationType.WARNING -> NotificationManager.warning(message)
+        }
     }
 }
