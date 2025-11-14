@@ -21,6 +21,9 @@ class ComboCoachApp(private val rootElement: Element) {
         setupIntervalTrainer()
     }
     
+    /**
+     * Renders the entire application UI inside the root element
+     */
     fun render() {
         // Clear root and build main container (this contains all UI components)
         rootElement.innerHTML = ""
@@ -30,6 +33,10 @@ class ComboCoachApp(private val rootElement: Element) {
         attachEventListeners()
     }
     
+    /**
+     * Central function to attach event listeners to various UI elements
+     * This keeps event handling organized in one place
+     */
     private fun attachEventListeners() {
         // Apply configuration button
         document.getElementById("apply-config-btn")?.addEventListener("click", {
@@ -87,16 +94,23 @@ class ComboCoachApp(private val rootElement: Element) {
         DisplayAreaComponent.showConfiguration(config)
     }
     
+    /**
+     * Apply configuration changes from the UI to the trainer instance
+     * 
+     * The configuration is managed in this central app class to ensure
+     * consistency across components and services. So, this is the single 
+     * source of truth for the configuration.
+     */
     private fun applyConfiguration() {
-        // Stop any running training before updating configuration
         val wasRunning = trainer.getIntervalTrainer().isActive()
         if (wasRunning) {
             trainer.getIntervalTrainer().stop()
         }
         
         // Read new configuration from UI and update the trainer instance
-        trainer.updateConfiguration(ConfigPanelComponent.readConfiguration())
-
+        config = DisplayAreaComponent.readConfiguration()
+        console.log("Applying configuration: $config")
+        trainer.updateConfiguration(config)
         // Re-setup interval trainer callbacks after configuration update
         setupIntervalTrainer()
         
@@ -108,10 +122,9 @@ class ComboCoachApp(private val rootElement: Element) {
     }
     
     private fun startIntervalTraining() {
-        trainer.updateConfiguration(ConfigPanelComponent.readConfiguration())
-        // Setup interval trainer callbacks after configuration update
+        config = DisplayAreaComponent.readConfiguration()
+        trainer.updateConfiguration(config)
         setupIntervalTrainer()
-        // Start training
         doStartTraining()
     }
     

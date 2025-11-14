@@ -12,7 +12,7 @@ import org.w3c.dom.events.Event
  * Main display area component following atomic design principles.
  * Contains two main sections:
  * 1. Control Panel - with configuration, start, stop, and preview buttons
- * 2. Content Area - displays active content (config form, training session, or preview)
+ * 2. Content Area - displays active content (config form, training session, or preview, etc.)
  */
 object DisplayAreaComponent {
     

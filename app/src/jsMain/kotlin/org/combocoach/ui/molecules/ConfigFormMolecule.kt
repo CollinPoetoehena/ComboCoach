@@ -67,7 +67,7 @@ object ConfigFormMolecule {
                         </label>
                     </div>
                 </div>
-                <button id="apply-config-btn" class="btn btn-primary">✓ Apply Configuration</button>
+                <button id="apply-config-btn" class="btn btn-primary">Apply Configuration</button>
             """
         } as HTMLElement
     }
