@@ -132,8 +132,10 @@ class IntervalTrainer(
     }
     
     private fun scheduleNextAction() {
-        if (!isRunning) return
+        if (!isRunning) return // If not running, do nothing
         
+        // Schedule next action display based on configured interval
+        // Set a timeout for action interval (this does the following: waits, then displays next action)
         timerId = window.setTimeout({
             currentActionIndex++
             
@@ -152,7 +154,7 @@ class IntervalTrainer(
     }
     
     private fun scheduleNextCombination() {
-        if (!isRunning) return
+        if (!isRunning) return // If not running, do nothing
         
         // Show countdown between combinations
         val intervalSeconds = config.combinationIntervalMs / 1000

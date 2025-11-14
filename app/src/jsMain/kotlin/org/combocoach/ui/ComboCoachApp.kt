@@ -34,12 +34,14 @@ class ComboCoachApp(private val rootElement: Element) {
     }
     
     /**
-     * Central function to attach event listeners to various UI elements
-     * This keeps event handling organized in one place
+     * Attach event listeners to various UI elements in this app (event listeners 
+     * are also applied in other elements, such as separate components/molecules/atoms in 
+     * their own methods)
      */
     private fun attachEventListeners() {
         // Apply configuration button
         document.getElementById("apply-config-btn")?.addEventListener("click", {
+            console.log("Apply Configuration button clicked!")
             applyConfiguration()
         })
     }
@@ -90,10 +92,6 @@ class ComboCoachApp(private val rootElement: Element) {
         } as HTMLElement
     }
     
-    private fun showConfiguration() {
-        DisplayAreaComponent.showConfiguration(config)
-    }
-    
     /**
      * Apply configuration changes from the UI to the trainer instance
      * 
@@ -102,10 +100,8 @@ class ComboCoachApp(private val rootElement: Element) {
      * source of truth for the configuration.
      */
     private fun applyConfiguration() {
-        val wasRunning = trainer.getIntervalTrainer().isActive()
-        if (wasRunning) {
-            trainer.getIntervalTrainer().stop()
-        }
+        // Always stop training when applying new configuration
+        trainer.getIntervalTrainer().stop()
         
         // Read new configuration from UI and update the trainer instance
         config = DisplayAreaComponent.readConfiguration()
@@ -114,11 +110,19 @@ class ComboCoachApp(private val rootElement: Element) {
         // Re-setup interval trainer callbacks after configuration update
         setupIntervalTrainer()
         
-        if (wasRunning) {
-            doStartTraining()
-        }
+        // TODO: maybe make a feature later to auto-restart training if it was running
+        // can then at the start add trainer.getIntervalTrainer().isActive() and then only stop then
+        // if (wasRunning) {
+        //     doStartTraining()
+        // }
         
         NotificationManager.success("Configuration applied!")
+    }
+
+    private fun showConfiguration() {
+        // Stop the interval trainer when showing configuration to make changes
+        trainer.getIntervalTrainer().stop()
+        DisplayAreaComponent.showConfiguration(config)
     }
     
     private fun startIntervalTraining() {
