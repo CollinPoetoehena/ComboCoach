@@ -23,6 +23,28 @@ class ComboCoachApp(private val rootElement: Element) {
     fun render() {
         rootElement.innerHTML = ""
         rootElement.appendChild(createMainContainer())
+        
+        // Attach event listeners after DOM is created
+        attachEventListeners()
+    }
+    
+    private fun attachEventListeners() {
+        // Apply configuration button
+        document.getElementById("apply-config-btn")?.addEventListener("click", {
+            console.log("Apply Configuration button clicked!")
+            applyConfiguration()
+        })
+        
+        // Show/hide offense ratio based on mode selection
+        document.getElementById("mode-select")?.addEventListener("change", { event ->
+            val select = event.target as? HTMLSelectElement
+            val offenseContainer = document.getElementById("offense-ratio-container") as? HTMLElement
+            if (select?.value == "BOTH") {
+                offenseContainer?.setAttribute("style", "display: flex;")
+            } else {
+                offenseContainer?.setAttribute("style", "display: none;")
+            }
+        })
     }
     
     private fun setupIntervalTrainer() {
@@ -174,22 +196,6 @@ class ComboCoachApp(private val rootElement: Element) {
                 </div>
                 <button id="apply-config-btn" class="btn btn-primary">✓ Apply Configuration</button>
             """
-            
-            // Attach event listeners after rendering
-            querySelector("#apply-config-btn")?.addEventListener("click", {
-                applyConfiguration()
-            })
-            
-            // Show/hide offense ratio based on mode selection
-            querySelector("#mode-select")?.addEventListener("change", {
-                val select = it.target as HTMLSelectElement
-                val offenseContainer = document.getElementById("offense-ratio-container") as? HTMLElement
-                if (select.value == "BOTH") {
-                    offenseContainer?.setAttribute("style", "display: flex;")
-                } else {
-                    offenseContainer?.setAttribute("style", "display: none;")
-                }
-            })
         } as HTMLElement
     }
     
@@ -249,6 +255,12 @@ class ComboCoachApp(private val rootElement: Element) {
     }
     
     private fun applyConfiguration() {
+        // Stop any running training before updating configuration
+        val wasRunning = trainer.getIntervalTrainer().isActive()
+        if (wasRunning) {
+            trainer.getIntervalTrainer().stop()
+        }
+        
         val actionIntervalInput = document.getElementById("action-interval-input") as? HTMLInputElement
         val comboIntervalInput = document.getElementById("combo-interval-input") as? HTMLInputElement
         val modeSelect = document.getElementById("mode-select") as? HTMLSelectElement
@@ -273,6 +285,14 @@ class ComboCoachApp(private val rootElement: Element) {
         
         trainer.updateConfiguration(config)
         
+        // Re-setup interval trainer callbacks after configuration update
+        setupIntervalTrainer()
+        
+        // If training was running, restart it with new config (but don't call applyConfiguration again!)
+        if (wasRunning) {
+            doStartTraining()
+        }
+        
         // Collapse config panel after applying
         isConfigExpanded = false
         render()
@@ -281,7 +301,48 @@ class ComboCoachApp(private val rootElement: Element) {
     }
     
     private fun startIntervalTraining() {
-        applyConfiguration()
+        // Read configuration from inputs before starting
+        readConfigurationFromInputs()
+        doStartTraining()
+    }
+    
+    private fun readConfigurationFromInputs() {
+        val actionIntervalInput = document.getElementById("action-interval-input") as? HTMLInputElement
+        val comboIntervalInput = document.getElementById("combo-interval-input") as? HTMLInputElement
+        val modeSelect = document.getElementById("mode-select") as? HTMLSelectElement
+        val stanceSelect = document.getElementById("stance-select") as? HTMLSelectElement
+        val minActionsInput = document.getElementById("min-actions-input") as? HTMLInputElement
+        val maxActionsInput = document.getElementById("max-actions-input") as? HTMLInputElement
+        val offenseRatioInput = document.getElementById("offense-ratio-input") as? HTMLInputElement
+        val numberNotationCheck = document.getElementById("number-notation-check") as? HTMLInputElement
+        
+        val mode = TrainingMode.valueOf(modeSelect?.value ?: "BOTH")
+        
+        val actionInterval = (actionIntervalInput?.value?.toFloatOrNull() ?: 1.0f) * 1000
+        val comboInterval = (comboIntervalInput?.value?.toFloatOrNull() ?: 3.0f) * 1000
+        
+        console.log("Reading config - Action Interval: ${actionInterval}ms, Combo Interval: ${comboInterval}ms")
+        
+        config = TrainingConfiguration(
+            actionIntervalMs = actionInterval.toInt(),
+            combinationIntervalMs = comboInterval.toInt(),
+            trainingMode = mode,
+            stance = Stance.valueOf(stanceSelect?.value ?: "ORTHODOX"),
+            minActions = minActionsInput?.value?.toIntOrNull() ?: 3,
+            maxActions = maxActionsInput?.value?.toIntOrNull() ?: 8,
+            offenseRatio = (offenseRatioInput?.value?.toIntOrNull() ?: 50) / 100f,
+            useNumberNotation = numberNotationCheck?.checked ?: true
+        )
+        
+        console.log("New config created: actionIntervalMs=${config.actionIntervalMs}, combinationIntervalMs=${config.combinationIntervalMs}")
+        
+        trainer.updateConfiguration(config)
+        setupIntervalTrainer()
+        
+        console.log("Configuration updated and callbacks re-setup")
+    }
+    
+    private fun doStartTraining() {
         currentDisplayedActions.clear()
         
         val displayArea = document.getElementById("display-area")

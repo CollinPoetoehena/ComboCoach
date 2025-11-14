@@ -8,8 +8,8 @@ import org.combocoach.domain.*
 class ComboTrainer(
     var config: TrainingConfiguration = TrainingConfiguration()
 ) {
-    private val flowGenerator = FlowCombinationGenerator(config)
-    private val intervalTrainer = IntervalTrainer(config)
+    private var flowGenerator = FlowCombinationGenerator(config)
+    private var intervalTrainer = IntervalTrainer(config)
     private val trainingHistory = mutableListOf<List<Action>>()
     
     // Legacy generator for backward compatibility
@@ -43,9 +43,21 @@ class ComboTrainer(
      */
     fun updateConfiguration(newConfig: TrainingConfiguration) {
         config = newConfig
-        // Note: Interval trainer and generator would need to be recreated
-        // or made mutable. For simplicity, configuration changes take effect
-        // on next combination generation.
+        // Recreate generators with new configuration
+        flowGenerator = FlowCombinationGenerator(config)
+        intervalTrainer = IntervalTrainer(config)
+        
+        // Re-setup callbacks if they were set
+        setupCallbacks()
+    }
+    
+    /**
+     * Setup callbacks for interval trainer (called after recreation)
+     */
+    private fun setupCallbacks() {
+        // Callbacks need to be re-registered after creating new interval trainer
+        // This is a no-op here but subclasses or callers should re-set their callbacks
+        // after calling updateConfiguration
     }
     
     /**
