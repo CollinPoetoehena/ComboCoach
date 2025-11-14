@@ -79,8 +79,7 @@ class ComboCoachApp(private val rootElement: Element) {
         return document.createElement("div").apply {
             setAttribute("class", "header")
             innerHTML = """
-                <h1>🥊 ComboCoach</h1>
-                <p class="subtitle">Flow-Based Interval Training</p>
+                <h1>🥊 ComboCoach – Flow-Based Interval Training</h1>
             """
         } as HTMLElement
     }
@@ -223,7 +222,7 @@ class ComboCoachApp(private val rootElement: Element) {
                     innerHTML = """
                         <p class="legend-description">
                             Standard boxing numbering system 
-                            (<a href="https://www.expertboxing.com/boxing-basics/boxing-punches" target="_blank">Learn More</a>)
+                            (<a href="https://expertboxing.com/the-beginners-guide-to-boxing" target="_blank">Learn More</a>)
                         </p>
                         <div class="legend-grid">
                             <div class="legend-item"><span class="strike-number">1</span> - Jab</div>
