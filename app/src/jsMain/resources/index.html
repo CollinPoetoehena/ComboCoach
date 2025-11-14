@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ComboCoach - Boxing Training Companion</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #ffffff;
+        }
+
+        #root {
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+            color: #ff6b6b;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            font-size: 18px;
+            color: #888;
+        }
+
+        /* Strike Legend */
+        .legend-container {
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .legend-container h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #4ecdc4;
+        }
+
+        .legend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .legend-item {
+            padding: 8px;
+            background-color: #333;
+            border-radius: 5px;
+        }
+
+        .strike-number {
+            font-weight: bold;
+            color: #4ecdc4;
+            margin-right: 5px;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .input-container label {
+            font-size: 16px;
+        }
+
+        .input-container input {
+            padding: 10px;
+            font-size: 16px;
+            width: 80px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #4ecdc4;
+            color: #1a1a1a;
+        }
+
+        .btn-primary:hover {
+            background-color: #45b8b0;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background-color: #ff6b6b;
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            background-color: #ff5252;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background-color: #f9ca24;
+            color: #1a1a1a;
+        }
+
+        .btn-warning:hover {
+            background-color: #f0b90b;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #666;
+            color: #fff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #555;
+            transform: translateY(-2px);
+        }
+
+        /* Combinations Display */
+        .combos-display {
+            margin-top: 30px;
+        }
+
+        .combos-title {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #4ecdc4;
+        }
+
+        .combos-grid {
+            display: grid;
+            gap: 20px;
+        }
+
+        .combo-card {
+            background-color: #2a2a2a;
+            border: 3px solid;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease;
+        }
+
+        .combo-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .combo-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .combo-card-header h3 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .combo-color-badge {
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .combo-elements {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .element-badge {
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* Welcome Message */
+        .welcome-message {
+            text-align: center;
+            margin-top: 50px;
+            padding: 40px;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+        }
+
+        .welcome-message p {
+            font-size: 20px;
+            color: #888;
+            line-height: 1.6;
+        }
+
+        .hint {
+            font-size: 16px !important;
+            color: #666 !important;
+            margin-top: 10px;
+        }
+
+        /* Configuration Panel */
+        .config-panel {
+            background-color: #2a2a2a;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .config-panel h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: #f9ca24;
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .config-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .config-item-full {
+            grid-column: 1 / -1;
+        }
+
+        .config-item label {
+            font-size: 14px;
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        .config-item input[type="number"],
+        .config-item select {
+            padding: 10px;
+            font-size: 15px;
+            border-radius: 5px;
+            border: 1px solid #444;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .config-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+
+        /* Display Area */
+        .display-area {
+            min-height: 300px;
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .training-in-progress {
+            text-align: center;
+        }
+
+        .training-in-progress h3 {
+            color: #4ecdc4;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+
+        .current-action-display {
+            margin-bottom: 25px;
+        }
+
+        .action-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .action-card.action-offensive {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .action-card.action-defensive {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .action-number-large {
+            font-size: 72px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+
+        .action-name {
+            font-size: 32px;
+            color: #fff;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .action-counter {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 10px;
+        }
+
+        .completion-message {
+            margin-top: 20px;
+            font-size: 28px;
+            color: #51cf66;
+            font-weight: bold;
+            animation: bounce 0.5s ease-out;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            width: 100%;
+            height: 12px;
+            background-color: #444;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4ecdc4 0%, #44a3f7 100%);
+            transition: width 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .combination-preview {
+            margin-top: 20px;
+        }
+
+        .preview-text {
+            font-size: 18px;
+            color: #ccc;
+            font-family: monospace;
+            background-color: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        /* Preview Display */
+        .preview-display {
+            text-align: center;
+        }
+
+        .preview-display h3 {
+            color: #4ecdc4;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .combo-preview-text {
+            font-size: 48px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 25px;
+            font-family: monospace;
+            letter-spacing: 5px;
+        }
+
+        .combo-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .action-badge {
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .action-offensive {
+            background-color: #ff6b6b;
+            color: #fff;
+        }
+
+        .action-defensive {
+            background-color: #4dabf7;
+            color: #fff;
+        }
+
+        /* Legend */
+        .legend-description {
+            color: #888;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .legend-description a {
+            color: #4ecdc4;
+            text-decoration: none;
+        }
+
+        .legend-description a:hover {
+            text-decoration: underline;
+        }
+
+        .legend-item.defense {
+            background-color: #2d4059;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 36px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .config-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-number-large {
+                font-size: 56px;
+            }
+
+            .action-name {
+                font-size: 24px;
+            }
+
+            .combo-preview-text {
+                font-size: 32px;
+                letter-spacing: 3px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root">
+        <div class="loading">🥊 Loading ComboCoach...</div>
+    </div>
+    <script src="combocoach.js"></script>
+</body>
+
+</html>

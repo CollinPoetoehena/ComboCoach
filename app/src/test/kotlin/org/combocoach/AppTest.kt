@@ -1,4 +1,4 @@
-package org.example
+package org.combocoach
 
 import kotlin.test.Test
 import kotlin.test.assertNotNull
@@ -12,3 +12,5 @@ class AppTest {
         assertTrue(classUnderTest.greeting.contains("ComboCoach"), "greeting should mention ComboCoach")
     }
 }
+// TODO: test things like the ratio functionality with multiple tries if it is actually that ratio, etc.
+// (I did test it manually and it did seem to work)
