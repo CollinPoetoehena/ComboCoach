@@ -26,6 +26,7 @@ object DisplayAreaComponent {
     
     private var currentMode = DisplayMode.WELCOME
     private var onApplyCallback: (() -> Unit)? = null
+    private var isTraining = false
     
     fun create(
         config: TrainingConfiguration,
@@ -45,19 +46,39 @@ object DisplayAreaComponent {
             // Control Panel Section
             appendChild(ControlPanelMolecule.create(
                 onConfiguration = {
-                    showConfiguration(config, onApplyConfig)
+                    // Toggle: if already showing config, go back to welcome
+                    if (currentMode == DisplayMode.CONFIGURATION) {
+                        showWelcome()
+                    } else {
+                        showConfiguration(config, onApplyConfig)
+                    }
                     onConfiguration(it)
                 },
                 onStart = onStart,
                 onStop = onStop,
-                onPreview = onPreview,
+                onPreview = {
+                    // Toggle: if already showing preview, go back to welcome
+                    if (currentMode == DisplayMode.PREVIEW) {
+                        showWelcome()
+                    } else {
+                        onPreview(it)
+                    }
+                },
                 onStrikeLegend = {
-                    showStrikeLegend()
+                    // Toggle: if already showing legend, go back to welcome
+                    if (currentMode == DisplayMode.STRIKE_LEGEND) {
+                        showWelcome()
+                    } else {
+                        showStrikeLegend()
+                    }
                 }
             ))
 
             // Content Area Section
             appendChild(createContentArea())
+            
+            // Initialize button states
+            updateTrainingButtons()
         } as HTMLElement
     }
 
@@ -69,6 +90,19 @@ object DisplayAreaComponent {
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
         contentArea?.appendChild(StrikeLegendMolecule.create())
+    }
+    
+    /**
+     * Show welcome message
+     */
+    fun showWelcome() {
+        currentMode = DisplayMode.WELCOME
+        val contentArea = document.getElementById("content-area")
+        contentArea?.innerHTML = """
+            <div class="welcome-message">
+                <p>👊 Click "Configuration" to adjust settings, or "Start Training" to begin!</p>
+            </div>
+        """
     }
     
     private fun createContentArea(): HTMLElement {
@@ -97,9 +131,10 @@ object DisplayAreaComponent {
         // Setup listeners after DOM is created
         ConfigFormMolecule.setupModeSelectListener()
         
-        // Attach apply button listener
+        // Attach apply button listener - also close configuration after applying
         document.getElementById("apply-config-btn")?.addEventListener("click", {
             onApply()
+            showWelcome()  // Close configuration view after applying
         })
     }
     
@@ -108,6 +143,7 @@ object DisplayAreaComponent {
      */
     fun showTrainingSession() {
         currentMode = DisplayMode.TRAINING
+        isTraining = true
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
         
@@ -131,7 +167,7 @@ object DisplayAreaComponent {
         } as HTMLElement
         
         contentArea?.appendChild(trainingContainer)
-        ButtonAtom.setEnabled("start-btn", false)
+        updateTrainingButtons()
     }
     
     /**
@@ -139,6 +175,7 @@ object DisplayAreaComponent {
      */
     fun showStopped() {
         currentMode = DisplayMode.WELCOME
+        isTraining = false
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = """
             <div class="welcome-message">
@@ -146,7 +183,7 @@ object DisplayAreaComponent {
                 <p class="hint">Click "Start Training" to begin again</p>
             </div>
         """
-        ButtonAtom.setEnabled("start-btn", true)
+        updateTrainingButtons()
     }
     
     /**
@@ -217,5 +254,24 @@ object DisplayAreaComponent {
     private fun resetProgressBar() {
         val progressBar = document.getElementById("progress-bar")
         progressBar?.setAttribute("style", "width: 0%")
+    }
+    
+    /**
+     * Update training buttons visibility based on training state
+     * Show Start button when not training, Show Stop button when training
+     */
+    private fun updateTrainingButtons() {
+        val startBtn = document.getElementById("start-btn") as? HTMLElement
+        val stopBtn = document.getElementById("stop-btn") as? HTMLElement
+        
+        if (isTraining) {
+            // Hide start, show stop
+            startBtn?.setAttribute("style", "display: none;")
+            stopBtn?.setAttribute("style", "display: inline-block;")
+        } else {
+            // Show start, hide stop
+            startBtn?.setAttribute("style", "display: inline-block;")
+            stopBtn?.setAttribute("style", "display: none;")
+        }
     }
 }
