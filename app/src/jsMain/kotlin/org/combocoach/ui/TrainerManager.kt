@@ -56,6 +56,20 @@ class TrainerManager {
     }
     
     /**
+     * Pause current training session
+     */
+    fun pauseTraining() {
+        trainer.getIntervalTrainer().pause()
+    }
+    
+    /**
+     * Resume paused training session
+     */
+    fun resumeTraining() {
+        trainer.getIntervalTrainer().resume()
+    }
+    
+    /**
      * Check if training is currently active
      */
     fun isTrainingActive(): Boolean {

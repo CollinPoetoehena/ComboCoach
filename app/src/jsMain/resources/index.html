@@ -129,6 +129,16 @@
             background-color: #45b8b0;
             transform: translateY(-2px);
         }
+        
+        .btn-success {
+            background-color: #2ecc71;
+            color: #fff;
+        }
+
+        .btn-success:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+        }
 
         .btn-danger {
             background-color: #ff6b6b;
@@ -243,6 +253,27 @@
             color: #666 !important;
             margin-top: 10px;
         }
+        
+        /* Paused Message */
+        .paused-message {
+            text-align: center;
+            margin-top: 50px;
+            padding: 40px;
+            background-color: #3a3a00;
+            border: 3px dashed #f9ca24;
+            border-radius: 10px;
+        }
+        
+        .paused-message h2 {
+            font-size: 32px;
+            color: #f9ca24;
+            margin-bottom: 15px;
+        }
+        
+        .paused-message p {
+            font-size: 18px;
+            color: #ccc;
+        }
 
         /* Configuration Panel */
         .config-panel {
@@ -315,13 +346,41 @@
         /* Control Panel within Display Area */
         .control-panel {
             display: flex;
-            gap: 15px;
+            gap: 20px;
             flex-wrap: wrap;
             justify-content: center;
+            align-items: center;
             padding: 20px;
             background-color: #333;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Training Controls Section */
+        .training-controls {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-radius: 6px;
+            border: 2px solid #ff6b6b;
+        }
+        
+        /* Control Divider */
+        .control-divider {
+            width: 2px;
+            height: 50px;
+            background: linear-gradient(to bottom, transparent, #666, transparent);
+        }
+        
+        /* Info Controls Section */
+        .info-controls {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background-color: #2a2a2a;
+            border-radius: 6px;
+            border: 2px solid #4ecdc4;
         }
 
         /* Content Area within Display Area */
