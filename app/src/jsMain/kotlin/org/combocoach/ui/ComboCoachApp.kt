@@ -62,10 +62,6 @@ class ComboCoachApp(private val rootElement: Element) {
                 onStop = { stopTraining() },
                 onPreview = { generatePreview() }
             ))
-            appendChild(StrikeLegendComponent.create(isLegendExpanded) {
-                isLegendExpanded = !isLegendExpanded
-                render()
-            })
         } as HTMLElement
     }
     

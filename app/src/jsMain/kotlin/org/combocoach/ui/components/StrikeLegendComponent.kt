@@ -27,9 +27,7 @@ object StrikeLegendComponent {
             setAttribute("class", "legend-header")
             innerHTML = """
                 <h2>📖 Strike Notation Reference</h2>
-                <button id="legend-toggle-btn" class="btn-icon">▼</button>
             """
-            querySelector("#legend-toggle-btn")?.addEventListener("click", { onToggle() })
         } as HTMLElement
     }
     

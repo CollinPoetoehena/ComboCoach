@@ -20,7 +20,8 @@ object DisplayAreaComponent {
         WELCOME,
         CONFIGURATION,
         TRAINING,
-        PREVIEW
+        PREVIEW,
+        STRIKE_LEGEND
     }
     
     private var currentMode = DisplayMode.WELCOME
@@ -36,11 +37,11 @@ object DisplayAreaComponent {
     ): HTMLElement {
         // Store the apply callback for later use
         onApplyCallback = onApplyConfig
-        
+
         return document.createElement("div").apply {
             setAttribute("class", "display-area")
             setAttribute("id", "display-area")
-            
+
             // Control Panel Section
             appendChild(ControlPanelMolecule.create(
                 onConfiguration = {
@@ -49,12 +50,25 @@ object DisplayAreaComponent {
                 },
                 onStart = onStart,
                 onStop = onStop,
-                onPreview = onPreview
+                onPreview = onPreview,
+                onStrikeLegend = {
+                    showStrikeLegend()
+                }
             ))
-            
+
             // Content Area Section
             appendChild(createContentArea())
         } as HTMLElement
+    }
+
+    /**
+     * Show the strike notation legend/reference in the content area
+     */
+    fun showStrikeLegend() {
+        currentMode = DisplayMode.STRIKE_LEGEND
+        val contentArea = document.getElementById("content-area")
+        contentArea?.innerHTML = ""
+        contentArea?.appendChild(org.combocoach.ui.components.StrikeLegendComponent.create(isExpanded = true, onToggle = {}))
     }
     
     private fun createContentArea(): HTMLElement {
