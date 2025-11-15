@@ -123,8 +123,11 @@ object DisplayAreaComponent {
             return
         }
         
-        // Store the current mode before showing info view
-        modeBeforeInfo = currentMode
+        // Store the current mode before showing info view (only if not already stored)
+        // This preserves the original mode when switching between info views
+        if (modeBeforeInfo == null) {
+            modeBeforeInfo = currentMode
+        }
         
         // If training is active (running, not paused), pause it
         if (isTrainingActive) {
