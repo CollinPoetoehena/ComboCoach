@@ -94,13 +94,30 @@ object DisplayAreaComponent {
     }
     
     /**
-     * Reset training state to IDLE (used after stopping training or applying config)
+     * Reset to IDLE state with optional custom message
+     * Centralizes all cleanup logic for stopping/resetting training
      */
-    fun resetTrainingState() {
+    private fun resetToIdle(message: String? = null) {
+        currentMode = DisplayMode.WELCOME
         trainingState = TrainingState.IDLE
         modeBeforeInfo = null
         restoreTrainingCallback = null
+        
+        val contentArea = document.getElementById("content-area")
+        contentArea?.innerHTML = message ?: """
+            <div class="welcome-message">
+                <p>👊 Click "Configuration" to adjust settings, or "Start Training" to begin!</p>
+            </div>
+        """
+        
         updateTrainingButtons()
+    }
+    
+    /**
+     * Reset training state to IDLE (used after applying config)
+     */
+    fun resetTrainingState() {
+        resetToIdle()
     }
     
     /**
@@ -319,16 +336,12 @@ object DisplayAreaComponent {
      * Show stopped message
      */
     fun showStopped() {
-        currentMode = DisplayMode.WELCOME
-        trainingState = TrainingState.IDLE
-        val contentArea = document.getElementById("content-area")
-        contentArea?.innerHTML = """
+        resetToIdle("""
             <div class="welcome-message">
                 <p>⏹️ Training stopped</p>
                 <p class="hint">Click "Start" to begin again</p>
             </div>
-        """
-        updateTrainingButtons()
+        """)
     }
     
     /**
