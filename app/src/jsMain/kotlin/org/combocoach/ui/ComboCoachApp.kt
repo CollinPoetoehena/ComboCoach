@@ -76,28 +76,22 @@ class ComboCoachApp(private val rootElement: Element) {
         val newConfig = DisplayAreaComponent.readConfiguration()
         trainerManager.updateConfiguration(newConfig)
     }
-    
-    /**
-     * Handle clicking an information button (Config, Preview, Legend)
-     * Pauses training if active before showing the info view
-     */
-    private fun handleInfoButtonClick(showInfoView: () -> Unit) {
-        if (trainerManager.isTrainingActive()) {
-            trainerManager.pauseTraining()
-            DisplayAreaComponent.pauseTraining()  // Use centralized pause method
-        }
-        showInfoView()
-    }
 
     /**
      * Show configuration panel
      */
     private fun showConfiguration() {
-        handleInfoButtonClick {
-            DisplayAreaComponent.showConfiguration(trainerManager.getConfig()) {
-                applyConfiguration() 
+        DisplayAreaComponent.handleInfoButton(
+            targetMode = DisplayAreaComponent.DisplayMode.CONFIGURATION,
+            isTrainingActive = trainerManager.isTrainingActive(),
+            onPauseTraining = { trainerManager.pauseTraining() },
+            onRestoreTraining = { restoreTrainingWithState() },
+            showView = {
+                DisplayAreaComponent.showConfiguration(trainerManager.getConfig()) {
+                    applyConfiguration()
+                }
             }
-        }
+        )
     }
     
     /**
@@ -138,18 +132,44 @@ class ComboCoachApp(private val rootElement: Element) {
      * Generate and display preview
      */
     private fun generatePreview() {
-        handleInfoButtonClick {
-            val (combo, formatted) = trainerManager.generatePreview()
-            DisplayAreaComponent.showPreview(combo, formatted)
-        }
+        DisplayAreaComponent.handleInfoButton(
+            targetMode = DisplayAreaComponent.DisplayMode.PREVIEW,
+            isTrainingActive = trainerManager.isTrainingActive(),
+            onPauseTraining = { trainerManager.pauseTraining() },
+            onRestoreTraining = { restoreTrainingWithState() },
+            showView = {
+                val (combo, formatted) = trainerManager.generatePreview()
+                DisplayAreaComponent.showPreview(combo, formatted)
+            }
+        )
     }
     
     /**
      * Show strike notation legend
      */
     private fun showStrikeLegend() {
-        handleInfoButtonClick {
-            DisplayAreaComponent.showStrikeLegend()
-        }
+        DisplayAreaComponent.handleInfoButton(
+            targetMode = DisplayAreaComponent.DisplayMode.STRIKE_LEGEND,
+            isTrainingActive = trainerManager.isTrainingActive(),
+            onPauseTraining = { trainerManager.pauseTraining() },
+            onRestoreTraining = { restoreTrainingWithState() },
+            showView = { DisplayAreaComponent.showStrikeLegend() }
+        )
+    }
+    
+    /**
+     * Restore training view with current state (actions, combo, stats)
+     */
+    private fun restoreTrainingWithState() {
+        DisplayAreaComponent.showTrainingSession()
+        
+        // Restore the combination preview if training was active
+        DisplayAreaComponent.updateCombinationPreview(
+            trainerManager.getCurrentDisplayedActions(),
+            trainerManager.getConfig()
+        )
+        
+        // Show paused message
+        DisplayAreaComponent.showPaused()
     }
 }

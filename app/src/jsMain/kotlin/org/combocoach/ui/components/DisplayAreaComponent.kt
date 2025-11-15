@@ -34,6 +34,7 @@ object DisplayAreaComponent {
     private var onApplyCallback: (() -> Unit)? = null
     private var trainingState = TrainingState.IDLE
     private var modeBeforeInfo: DisplayMode? = null  // Store mode before showing info views
+    private var restoreTrainingCallback: (() -> Unit)? = null  // Callback to restore training state
     
     fun create(
         config: TrainingConfiguration,
@@ -55,34 +56,13 @@ object DisplayAreaComponent {
 
             // Control Panel Section
             appendChild(ControlPanelMolecule.create(
-                onConfiguration = {
-                    // Toggle: if already showing config, restore previous state
-                    if (currentMode == DisplayMode.CONFIGURATION) {
-                        restorePreviousMode()
-                    } else {
-                        onConfiguration(it)  // Call the app's handler which will call showConfiguration
-                    }
-                },
+                onConfiguration = onConfiguration,
                 onStart = onStart,
                 onResume = onResume,
                 onPause = onPause,
                 onStop = onStop,
-                onPreview = {
-                    // Toggle: if already showing preview, restore previous state
-                    if (currentMode == DisplayMode.PREVIEW) {
-                        restorePreviousMode()
-                    } else {
-                        onPreview(it)
-                    }
-                },
-                onStrikeLegend = {
-                    // Toggle: if already showing legend, restore previous state
-                    if (currentMode == DisplayMode.STRIKE_LEGEND) {
-                        restorePreviousMode()
-                    } else {
-                        onStrikeLegend(it)
-                    }
-                }
+                onPreview = onPreview,
+                onStrikeLegend = onStrikeLegend
             ))
 
             // Content Area Section
@@ -94,7 +74,6 @@ object DisplayAreaComponent {
      * Show the strike notation legend/reference in the content area
      */
     fun showStrikeLegend() {
-        modeBeforeInfo = currentMode  // Store previous mode
         currentMode = DisplayMode.STRIKE_LEGEND
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
@@ -109,7 +88,7 @@ object DisplayAreaComponent {
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = """
             <div class="welcome-message">
-                <p>👊 Click "Configuration" to adjust settings, or "Start Training" to begin!</p>
+                <p>👊 Click "Config" to adjust settings, or "Start" to begin training!</p>
             </div>
         """
     }
@@ -128,9 +107,44 @@ object DisplayAreaComponent {
     fun getCurrentMode(): DisplayMode = currentMode
     
     /**
-     * Restore the previous mode before info view was shown
+     * Centralized handler for all info button clicks
+     * Handles toggle logic, pause, mode storage, and delegates to specific show method
      */
-    private fun restorePreviousMode() {
+    fun handleInfoButton(
+        targetMode: DisplayMode,
+        isTrainingActive: Boolean,
+        onPauseTraining: () -> Unit,
+        onRestoreTraining: (() -> Unit)?,
+        showView: () -> Unit
+    ) {
+        // Check if we're toggling off (already showing this info view)
+        if (currentMode == targetMode) {
+            restorePreviousMode()
+            return
+        }
+        
+        // Store the current mode before showing info view
+        modeBeforeInfo = currentMode
+        
+        // Pause the training logic and update button visibility
+        if (isTrainingActive) {
+            onPauseTraining()
+            // Mark as paused and update buttons
+            trainingState = TrainingState.PAUSED
+            updateTrainingButtons()
+            // Store restoration callback
+            restoreTrainingCallback = onRestoreTraining
+        }
+        
+        // Show the info view (this will set currentMode to targetMode)
+        showView()
+    }
+    
+    /**
+     * Restore the previous mode before info view was shown
+     * Called when toggling info buttons off
+     */
+    fun restorePreviousMode() {
         when (modeBeforeInfo) {
             DisplayMode.TRAINING -> {
                 // If we were in training and paused, show the paused state
@@ -164,19 +178,26 @@ object DisplayAreaComponent {
     
     /**
      * Show paused state after returning from info view
-     * Different from pauseTraining() as we're already paused, just need to restore the UI
+     * Rebuilds the training container and shows the paused message
      */
     private fun showPausedAfterInfo() {
         currentMode = DisplayMode.TRAINING
-        restoreTrainingView()
-        // Update the current action display to show paused message
-        val currentActionDisplay = document.getElementById("current-action-display")
-        currentActionDisplay?.innerHTML = """
-            <div class="paused-message">
-                <h2>⏸️ Training Paused</h2>
-                <p>Click "Resume" to continue</p>
-            </div>
-        """
+        
+        // Use restoration callback if available (preserves training state)
+        if (restoreTrainingCallback != null) {
+            restoreTrainingCallback?.invoke()
+            restoreTrainingCallback = null
+        } else {
+            // Fallback: restore with empty training view
+            restoreTrainingView()
+            val currentActionDisplay = document.getElementById("current-action-display")
+            currentActionDisplay?.innerHTML = """
+                <div class="paused-message">
+                    <h2>⏸️ Training Paused</h2>
+                    <p>Click "Resume" to continue</p>
+                </div>
+            """
+        }
     }
     
     private fun createContentArea(): HTMLElement {
@@ -187,7 +208,7 @@ object DisplayAreaComponent {
             // Initial welcome message
             innerHTML = """
                 <div class="welcome-message">
-                    <p>👊 Click "Configuration" to adjust settings, or "Start Training" to begin!</p>
+                    <p>👊 Click "Config" to adjust settings, or "Start" to begin training!</p>
                 </div>
             """
         } as HTMLElement
@@ -197,7 +218,6 @@ object DisplayAreaComponent {
      * Show configuration form in the content area
      */
     fun showConfiguration(config: TrainingConfiguration, onApply: () -> Unit) {
-        modeBeforeInfo = currentMode  // Store previous mode
         currentMode = DisplayMode.CONFIGURATION
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
@@ -298,7 +318,6 @@ object DisplayAreaComponent {
      * Show combo preview
      */
     fun showPreview(combo: List<Action>, formatted: String) {
-        modeBeforeInfo = currentMode  // Store previous mode
         currentMode = DisplayMode.PREVIEW
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
