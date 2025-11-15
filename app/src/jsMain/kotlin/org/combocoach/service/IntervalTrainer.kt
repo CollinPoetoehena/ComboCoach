@@ -73,6 +73,7 @@ class IntervalTrainer(
         timerId = null
         isRunning = false
         currentActionIndex = 0
+        currentCombination = emptyList() // Clear combination (avoids isPaused() returning true)
     }
     
     /**
