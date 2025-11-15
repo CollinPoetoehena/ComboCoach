@@ -61,7 +61,8 @@ class ComboCoachApp(private val rootElement: Element) {
                 onStart = { startOrResumeTraining() },
                 onPause = { pauseTraining() },
                 onStop = { stopTraining() },
-                onPreview = { generatePreview() }
+                onPreview = { generatePreview() },
+                onStrikeLegend = { showStrikeLegend() }
             ))
         } as HTMLElement
     }
@@ -74,15 +75,27 @@ class ComboCoachApp(private val rootElement: Element) {
         val newConfig = DisplayAreaComponent.readConfiguration()
         trainerManager.updateConfiguration(newConfig)
     }
+    
+    /**
+     * Handle clicking an information button (Config, Preview, Legend)
+     * Pauses training if active before showing the info view
+     */
+    private fun handleInfoButtonClick(showInfoView: () -> Unit) {
+        if (trainerManager.isTrainingActive()) {
+            trainerManager.pauseTraining()
+            DisplayAreaComponent.setTrainingState(DisplayAreaComponent.TrainingState.PAUSED)
+        }
+        showInfoView()
+    }
 
     /**
      * Show configuration panel
      */
     private fun showConfiguration() {
-        trainerManager.stopTraining()
-        DisplayAreaComponent.showConfiguration(trainerManager.getConfig()) {
-            // TODO: why is this needed exactly, and what does this do?
-            applyConfiguration() 
+        handleInfoButtonClick {
+            DisplayAreaComponent.showConfiguration(trainerManager.getConfig()) {
+                applyConfiguration() 
+            }
         }
     }
     
@@ -137,7 +150,18 @@ class ComboCoachApp(private val rootElement: Element) {
      * Generate and display preview
      */
     private fun generatePreview() {
-        val (combo, formatted) = trainerManager.generatePreview()
-        DisplayAreaComponent.showPreview(combo, formatted)
+        handleInfoButtonClick {
+            val (combo, formatted) = trainerManager.generatePreview()
+            DisplayAreaComponent.showPreview(combo, formatted)
+        }
+    }
+    
+    /**
+     * Show strike notation legend
+     */
+    private fun showStrikeLegend() {
+        handleInfoButtonClick {
+            DisplayAreaComponent.showStrikeLegend()
+        }
     }
 }

@@ -41,7 +41,8 @@ object DisplayAreaComponent {
         onStart: (Event) -> Unit,
         onPause: (Event) -> Unit,
         onStop: (Event) -> Unit,
-        onPreview: (Event) -> Unit
+        onPreview: (Event) -> Unit,
+        onStrikeLegend: (Event) -> Unit
     ): HTMLElement {
         // Store the apply callback for later use
         onApplyCallback = onApplyConfig
@@ -76,7 +77,7 @@ object DisplayAreaComponent {
                     if (currentMode == DisplayMode.STRIKE_LEGEND) {
                         showWelcome()
                     } else {
-                        showStrikeLegend()
+                        onStrikeLegend(it)
                     }
                 }
             ))
@@ -108,6 +109,19 @@ object DisplayAreaComponent {
             </div>
         """
     }
+    
+    /**
+     * Set training state and update button visibility
+     */
+    fun setTrainingState(state: TrainingState) {
+        trainingState = state
+        updateTrainingButtons()
+    }
+    
+    /**
+     * Get current display mode
+     */
+    fun getCurrentMode(): DisplayMode = currentMode
     
     private fun createContentArea(): HTMLElement {
         return document.createElement("div").apply {
@@ -148,6 +162,13 @@ object DisplayAreaComponent {
     fun showTrainingSession() {
         currentMode = DisplayMode.TRAINING
         trainingState = TrainingState.RUNNING
+        restoreTrainingView()
+    }
+    
+    /**
+     * Restore training view without changing state
+     */
+    private fun restoreTrainingView() {
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
         
@@ -193,8 +214,9 @@ object DisplayAreaComponent {
      * Resume from paused state
      */
     fun showResumed() {
+        currentMode = DisplayMode.TRAINING
         trainingState = TrainingState.RUNNING
-        updateTrainingButtons()
+        restoreTrainingView()
     }
     
     /**
