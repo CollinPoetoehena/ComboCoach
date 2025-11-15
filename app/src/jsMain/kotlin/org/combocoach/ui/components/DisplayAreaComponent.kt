@@ -39,6 +39,7 @@ object DisplayAreaComponent {
         onConfiguration: (Event) -> Unit,
         onApplyConfig: () -> Unit,
         onStart: (Event) -> Unit,
+        onResume: (Event) -> Unit,
         onPause: (Event) -> Unit,
         onStop: (Event) -> Unit,
         onPreview: (Event) -> Unit,
@@ -62,6 +63,7 @@ object DisplayAreaComponent {
                     }
                 },
                 onStart = onStart,
+                onResume = onResume,
                 onPause = onPause,
                 onStop = onStop,
                 onPreview = {
@@ -170,6 +172,16 @@ object DisplayAreaComponent {
      */
     private fun restoreTrainingView() {
         val contentArea = document.getElementById("content-area")
+        
+        // Check if training container already exists (e.g., when resuming from pause)
+        val existingContainer = contentArea?.querySelector(".training-container")
+        if (existingContainer != null) {
+            // Container already exists, just update buttons
+            updateTrainingButtons()
+            return
+        }
+        
+        // No existing container, create fresh one
         contentArea?.innerHTML = ""
         
         val trainingContainer = document.createElement("div").apply {
@@ -204,7 +216,7 @@ object DisplayAreaComponent {
         currentActionDisplay?.innerHTML = """
             <div class="paused-message">
                 <h2>⏸️ Training Paused</h2>
-                <p>Click "Start" to resume</p>
+                <p>Click "Resume" to continue</p>
             </div>
         """
         updateTrainingButtons()
@@ -313,6 +325,7 @@ object DisplayAreaComponent {
      */
     private fun updateTrainingButtons() {
         val startBtn = document.getElementById("start-btn") as? HTMLElement
+        val resumeBtn = document.getElementById("resume-btn") as? HTMLElement
         val pauseBtn = document.getElementById("pause-btn") as? HTMLElement
         val stopBtn = document.getElementById("stop-btn") as? HTMLElement
         
@@ -320,18 +333,21 @@ object DisplayAreaComponent {
             TrainingState.IDLE -> {
                 // Show only Start button
                 startBtn?.setAttribute("style", "display: inline-block;")
+                resumeBtn?.setAttribute("style", "display: none;")
                 pauseBtn?.setAttribute("style", "display: none;")
                 stopBtn?.setAttribute("style", "display: none;")
             }
             TrainingState.RUNNING -> {
                 // Show Pause and Stop buttons
                 startBtn?.setAttribute("style", "display: none;")
+                resumeBtn?.setAttribute("style", "display: none;")
                 pauseBtn?.setAttribute("style", "display: inline-block;")
                 stopBtn?.setAttribute("style", "display: inline-block;")
             }
             TrainingState.PAUSED -> {
-                // Show Start (resume) and Stop buttons
-                startBtn?.setAttribute("style", "display: inline-block;")
+                // Show Resume and Stop buttons
+                startBtn?.setAttribute("style", "display: none;")
+                resumeBtn?.setAttribute("style", "display: inline-block;")
                 pauseBtn?.setAttribute("style", "display: none;")
                 stopBtn?.setAttribute("style", "display: inline-block;")
             }

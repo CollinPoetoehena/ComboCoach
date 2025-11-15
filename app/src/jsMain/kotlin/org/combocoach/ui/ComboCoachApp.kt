@@ -58,7 +58,8 @@ class ComboCoachApp(private val rootElement: Element) {
                 config = trainerManager.getConfig(),
                 onConfiguration = { showConfiguration() },
                 onApplyConfig = { applyConfiguration() },
-                onStart = { startOrResumeTraining() },
+                onStart = { startTraining() },
+                onResume = { resumeTraining() },
                 onPause = { pauseTraining() },
                 onStop = { stopTraining() },
                 onPreview = { generatePreview() },
@@ -107,19 +108,6 @@ class ComboCoachApp(private val rootElement: Element) {
         // Do NOT read from DOM again as the config form may not be visible (resulting in default config)
         DisplayAreaComponent.showTrainingSession()
         trainerManager.startTraining()
-    }
-    
-    /**
-     * Start or resume training based on current state
-     */
-    private fun startOrResumeTraining() {
-        if (trainerManager.isTrainingPaused()) {
-            // Resume paused training - continue where we left off
-            resumeTraining()
-        } else {
-            // Start new training session
-            startTraining()
-        }
     }
     
     /**
