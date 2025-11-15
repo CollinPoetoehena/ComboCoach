@@ -120,7 +120,7 @@
             transition: all 0.3s ease;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
-        
+
         .btn:active {
             transform: scale(0.98);
         }
@@ -178,6 +178,17 @@
             background: linear-gradient(135deg, #495057 0%, #3d4349 100%);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(90, 98, 104, 0.4);
+        }
+
+        .btn-info {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: #fff;
+        }
+
+        .btn-info:hover {
+            background: linear-gradient(135deg, #2980b9 0%, #21618c 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.4);
         }
 
         /* Combinations Display */
@@ -375,7 +386,7 @@
             justify-content: center;
             flex-wrap: wrap;
         }
-        
+
         .training-controls::before {
             content: "Training";
             position: absolute;
@@ -392,7 +403,8 @@
 
         /* Control Divider */
         .control-divider {
-            display: none; /* Hide on mobile by default */
+            display: none;
+            /* Hide on mobile by default */
             width: 100%;
             height: 1px;
             background: linear-gradient(to right, transparent, #444, transparent);
@@ -410,7 +422,7 @@
             justify-content: center;
             flex-wrap: wrap;
         }
-        
+
         .info-controls::before {
             content: "Information";
             position: absolute;
@@ -424,13 +436,13 @@
             letter-spacing: 1px;
             border-radius: 4px;
         }
-        
+
         /* Ensure sections have relative positioning for labels */
         .training-controls,
         .info-controls {
             position: relative;
         }
-        
+
         /* Button adjustments for mobile */
         .training-controls .btn,
         .info-controls .btn {
@@ -440,7 +452,7 @@
             font-size: 14px;
             padding: 10px 16px;
         }
-        
+
         /* Desktop layout */
         @media (min-width: 768px) {
             .control-panel {
@@ -448,7 +460,7 @@
                 align-items: center;
                 justify-content: center;
             }
-            
+
             .control-divider {
                 display: block;
                 width: 2px;
@@ -456,12 +468,12 @@
                 background: linear-gradient(to bottom, transparent, #444, transparent);
                 margin: 0;
             }
-            
+
             .training-controls,
             .info-controls {
                 flex-wrap: nowrap;
             }
-            
+
             .training-controls .btn,
             .info-controls .btn {
                 flex: 0 1 auto;
@@ -728,30 +740,31 @@
             .action-number-large {
                 font-size: 56px;
             }
-            
+
             .display-area {
                 padding: 15px;
             }
-            
+
             .control-panel {
                 padding: 15px;
                 gap: 12px;
             }
-            
+
             .training-controls,
             .info-controls {
                 padding: 10px;
                 gap: 6px;
             }
         }
-            .action-name {
-                font-size: 24px;
-            }
 
-            .combo-preview-text {
-                font-size: 32px;
-                letter-spacing: 3px;
-            }
+        .action-name {
+            font-size: 24px;
+        }
+
+        .combo-preview-text {
+            font-size: 32px;
+            letter-spacing: 3px;
+        }
         }
     </style>
 </head>

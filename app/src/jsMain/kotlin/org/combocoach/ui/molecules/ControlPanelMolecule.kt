@@ -15,6 +15,7 @@ object ControlPanelMolecule {
     fun create(
         onConfiguration: (Event) -> Unit,
         onStart: (Event) -> Unit,
+        onResume: (Event) -> Unit,
         onPause: (Event) -> Unit,
         onStop: (Event) -> Unit,
         onPreview: (Event) -> Unit,
@@ -24,7 +25,7 @@ object ControlPanelMolecule {
             setAttribute("class", "control-panel")
             
             // Training Controls Section
-            appendChild(createTrainingControls(onStart, onPause, onStop))
+            appendChild(createTrainingControls(onStart, onResume, onPause, onStop))
             
             // Divider
             appendChild(document.createElement("div").apply {
@@ -38,6 +39,7 @@ object ControlPanelMolecule {
     
     private fun createTrainingControls(
         onStart: (Event) -> Unit,
+        onResume: (Event) -> Unit,
         onPause: (Event) -> Unit,
         onStop: (Event) -> Unit
     ): HTMLElement {
@@ -45,6 +47,11 @@ object ControlPanelMolecule {
             setAttribute("class", "training-controls")
             
             appendChild(ButtonAtom.create("▶️ Start", "btn btn-success", "start-btn", onStart))
+            
+            // Create resume button but hide it initially (blue color to distinguish from Start)
+            appendChild(ButtonAtom.create("▶️ Resume", "btn btn-info", "resume-btn", onResume).apply {
+                setAttribute("style", "display: none;")
+            })
             
             // Create pause button but hide it initially
             appendChild(ButtonAtom.create("⏸️ Pause", "btn btn-warning", "pause-btn", onPause).apply {

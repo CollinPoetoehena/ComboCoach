@@ -58,10 +58,12 @@ class ComboCoachApp(private val rootElement: Element) {
                 config = trainerManager.getConfig(),
                 onConfiguration = { showConfiguration() },
                 onApplyConfig = { applyConfiguration() },
-                onStart = { startOrResumeTraining() },
+                onStart = { startTraining() },
+                onResume = { resumeTraining() },
                 onPause = { pauseTraining() },
                 onStop = { stopTraining() },
-                onPreview = { generatePreview() }
+                onPreview = { generatePreview() },
+                onStrikeLegend = { showStrikeLegend() }
             ))
         } as HTMLElement
     }
@@ -73,39 +75,35 @@ class ComboCoachApp(private val rootElement: Element) {
         trainerManager.stopTraining()
         val newConfig = DisplayAreaComponent.readConfiguration()
         trainerManager.updateConfiguration(newConfig)
+        // Reset training state to IDLE (clears paused state and updates buttons)
+        DisplayAreaComponent.resetTrainingState()
     }
 
     /**
      * Show configuration panel
      */
     private fun showConfiguration() {
-        trainerManager.stopTraining()
-        DisplayAreaComponent.showConfiguration(trainerManager.getConfig()) { 
-            applyConfiguration() 
-        }
+        DisplayAreaComponent.handleInfoButton(
+            targetMode = DisplayAreaComponent.DisplayMode.CONFIGURATION,
+            isTrainingActive = trainerManager.isTrainingActive(),
+            onPauseTraining = { trainerManager.pauseTraining() },
+            onRestoreTraining = { restoreTrainingWithState() },
+            showView = {
+                DisplayAreaComponent.showConfiguration(trainerManager.getConfig()) {
+                    applyConfiguration()
+                }
+            }
+        )
     }
     
     /**
      * Start interval training
      */
     private fun startTraining() {
-        val newConfig = DisplayAreaComponent.readConfiguration()
-        trainerManager.updateConfiguration(newConfig)
+        // Configuration is already stored in trainerManager (applied via applyConfiguration)
+        // Do NOT read from DOM again as the config form may not be visible (resulting in default config)
         DisplayAreaComponent.showTrainingSession()
         trainerManager.startTraining()
-    }
-    
-    /**
-     * Start or resume training based on current state
-     */
-    private fun startOrResumeTraining() {
-        if (trainerManager.isTrainingActive()) {
-            // Resume paused training
-            resumeTraining()
-        } else {
-            // Start new training session
-            startTraining()
-        }
     }
     
     /**
@@ -136,7 +134,56 @@ class ComboCoachApp(private val rootElement: Element) {
      * Generate and display preview
      */
     private fun generatePreview() {
-        val (combo, formatted) = trainerManager.generatePreview()
-        DisplayAreaComponent.showPreview(combo, formatted)
+        DisplayAreaComponent.handleInfoButton(
+            targetMode = DisplayAreaComponent.DisplayMode.PREVIEW,
+            isTrainingActive = trainerManager.isTrainingActive(),
+            onPauseTraining = { trainerManager.pauseTraining() },
+            onRestoreTraining = { restoreTrainingWithState() },
+            showView = {
+                val (combo, formatted) = trainerManager.generatePreview()
+                DisplayAreaComponent.showPreview(combo, formatted)
+            }
+        )
+    }
+    
+    /**
+     * Show strike notation legend
+     */
+    private fun showStrikeLegend() {
+        DisplayAreaComponent.handleInfoButton(
+            targetMode = DisplayAreaComponent.DisplayMode.STRIKE_LEGEND,
+            isTrainingActive = trainerManager.isTrainingActive(),
+            onPauseTraining = { trainerManager.pauseTraining() },
+            onRestoreTraining = { restoreTrainingWithState() },
+            showView = { DisplayAreaComponent.showStrikeLegend() }
+        )
+    }
+    
+    /**
+     * Restore training view with current state (actions, combo, stats)
+     */
+    private fun restoreTrainingWithState() {
+        // Recreate the training container
+        DisplayAreaComponent.showTrainingSession()
+        
+        // Restore completed combos count
+        val completedCombos = trainerManager.getCompletedCombos()
+        DisplayAreaComponent.updateCompletedCombos(completedCombos)
+        
+        // Restore the combination preview (show only actions displayed so far, not full combo)
+        val displayedActions = trainerManager.getCurrentDisplayedActions()
+        if (displayedActions.isNotEmpty()) {
+            DisplayAreaComponent.updateCombinationPreview(
+                displayedActions,
+                trainerManager.getConfig()
+            )
+        }
+        
+        // Restore progress bar
+        val progress = trainerManager.getProgress()
+        DisplayAreaComponent.setProgressBar(progress)
+        
+        // Show paused message
+        DisplayAreaComponent.showPaused()
     }
 }

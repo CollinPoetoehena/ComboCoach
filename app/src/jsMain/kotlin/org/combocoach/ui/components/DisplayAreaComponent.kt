@@ -33,15 +33,19 @@ object DisplayAreaComponent {
     private var currentMode = DisplayMode.WELCOME
     private var onApplyCallback: (() -> Unit)? = null
     private var trainingState = TrainingState.IDLE
+    private var modeBeforeInfo: DisplayMode? = null  // Store mode before showing info views
+    private var restoreTrainingCallback: (() -> Unit)? = null  // Callback to restore training state
     
     fun create(
         config: TrainingConfiguration,
         onConfiguration: (Event) -> Unit,
         onApplyConfig: () -> Unit,
         onStart: (Event) -> Unit,
+        onResume: (Event) -> Unit,
         onPause: (Event) -> Unit,
         onStop: (Event) -> Unit,
-        onPreview: (Event) -> Unit
+        onPreview: (Event) -> Unit,
+        onStrikeLegend: (Event) -> Unit
     ): HTMLElement {
         // Store the apply callback for later use
         onApplyCallback = onApplyConfig
@@ -52,33 +56,13 @@ object DisplayAreaComponent {
 
             // Control Panel Section
             appendChild(ControlPanelMolecule.create(
-                onConfiguration = {
-                    // Toggle: if already showing config, go back to welcome
-                    if (currentMode == DisplayMode.CONFIGURATION) {
-                        showWelcome()
-                    } else {
-                        onConfiguration(it)  // Call the app's handler which will call showConfiguration
-                    }
-                },
+                onConfiguration = onConfiguration,
                 onStart = onStart,
+                onResume = onResume,
                 onPause = onPause,
                 onStop = onStop,
-                onPreview = {
-                    // Toggle: if already showing preview, go back to welcome
-                    if (currentMode == DisplayMode.PREVIEW) {
-                        showWelcome()
-                    } else {
-                        onPreview(it)
-                    }
-                },
-                onStrikeLegend = {
-                    // Toggle: if already showing legend, go back to welcome
-                    if (currentMode == DisplayMode.STRIKE_LEGEND) {
-                        showWelcome()
-                    } else {
-                        showStrikeLegend()
-                    }
-                }
+                onPreview = onPreview,
+                onStrikeLegend = onStrikeLegend
             ))
 
             // Content Area Section
@@ -109,6 +93,147 @@ object DisplayAreaComponent {
         """
     }
     
+    /**
+     * Reset to IDLE state with optional custom message
+     * Centralizes all cleanup logic for stopping/resetting training
+     */
+    private fun resetToIdle(message: String? = null) {
+        currentMode = DisplayMode.WELCOME
+        trainingState = TrainingState.IDLE
+        modeBeforeInfo = null
+        restoreTrainingCallback = null
+        
+        val contentArea = document.getElementById("content-area")
+        contentArea?.innerHTML = message ?: """
+            <div class="welcome-message">
+                <p>👊 Click "Configuration" to adjust settings, or "Start Training" to begin!</p>
+            </div>
+        """
+        
+        updateTrainingButtons()
+    }
+    
+    /**
+     * Reset training state to IDLE (used after applying config)
+     */
+    fun resetTrainingState() {
+        resetToIdle()
+    }
+    
+    /**
+     * Set training state and update button visibility
+     */
+    fun setTrainingState(state: TrainingState) {
+        trainingState = state
+        updateTrainingButtons()
+    }
+    
+    /**
+     * Get current display mode
+     */
+    fun getCurrentMode(): DisplayMode = currentMode
+    
+    /**
+     * Centralized handler for all info button clicks
+     * Handles toggle logic, pause, mode storage, and delegates to specific show method
+     */
+    fun handleInfoButton(
+        targetMode: DisplayMode,
+        isTrainingActive: Boolean,
+        onPauseTraining: () -> Unit,
+        onRestoreTraining: (() -> Unit)?,
+        showView: () -> Unit
+    ) {
+        // Check if we're toggling off (already showing this info view)
+        if (currentMode == targetMode) {
+            restorePreviousMode()
+            return
+        }
+        
+        // Store the current mode before showing info view (only if not already stored)
+        // This preserves the original mode when switching between info views
+        // For example, when clicking different Information buttons it otherwise resets the state
+        if (modeBeforeInfo == null) {
+            modeBeforeInfo = currentMode
+        }
+        
+        // If training is active (running, not paused), pause it
+        if (isTrainingActive) {
+            onPauseTraining()
+            // Mark as paused and update buttons
+            trainingState = TrainingState.PAUSED
+            updateTrainingButtons()
+            // Store restoration callback (only when actively pausing)
+            restoreTrainingCallback = onRestoreTraining
+        } else if (trainingState == TrainingState.PAUSED && restoreTrainingCallback == null) {
+            // Already paused but callback was consumed (now it is null) - restore it
+            restoreTrainingCallback = onRestoreTraining
+        }
+        
+        // Show the info view (this will set currentMode to targetMode)
+        showView()
+    }
+    
+    /**
+     * Restore the previous mode before info view was shown
+     * Called when toggling info buttons off
+     */
+    fun restorePreviousMode() {
+        when (modeBeforeInfo) {
+            DisplayMode.TRAINING -> {
+                // If we were in training and paused, show the paused state
+                if (trainingState == TrainingState.PAUSED) {
+                    showPausedAfterInfo()
+                } else {
+                    // Should not happen, but restore training view just in case
+                    restoreTrainingView()
+                }
+            }
+            else -> showWelcome()
+        }
+        modeBeforeInfo = null
+    }
+    
+    /**
+     * Centralized method to pause training and show paused state
+     * Used by both Pause button and info buttons during active training
+     */
+    fun pauseTraining() {
+        trainingState = TrainingState.PAUSED
+        val currentActionDisplay = document.getElementById("current-action-display")
+        currentActionDisplay?.innerHTML = """
+            <div class="paused-message">
+                <h2>⏸️ Training Paused</h2>
+                <p>Click "Resume" to continue</p>
+            </div>
+        """
+        updateTrainingButtons()
+    }
+    
+    /**
+     * Show paused state after returning from info view
+     * Rebuilds the training container and shows the paused message
+     */
+    private fun showPausedAfterInfo() {
+        currentMode = DisplayMode.TRAINING
+        
+        // Use restoration callback if available (preserves training state)
+        if (restoreTrainingCallback != null) {
+            restoreTrainingCallback?.invoke()
+            restoreTrainingCallback = null
+        } else {
+            // Fallback: restore with empty training view
+            restoreTrainingView()
+            val currentActionDisplay = document.getElementById("current-action-display")
+            currentActionDisplay?.innerHTML = """
+                <div class="paused-message">
+                    <h2>⏸️ Training Paused</h2>
+                    <p>Click "Resume" to continue</p>
+                </div>
+            """
+        }
+    }
+    
     private fun createContentArea(): HTMLElement {
         return document.createElement("div").apply {
             setAttribute("class", "content-area")
@@ -117,7 +242,7 @@ object DisplayAreaComponent {
             // Initial welcome message
             innerHTML = """
                 <div class="welcome-message">
-                    <p>👊 Click "Configuration" to adjust settings, or "Start Training" to begin!</p>
+                    <p>👊 Click "Config" to adjust settings, or "Start" to begin training!</p>
                 </div>
             """
         } as HTMLElement
@@ -148,7 +273,24 @@ object DisplayAreaComponent {
     fun showTrainingSession() {
         currentMode = DisplayMode.TRAINING
         trainingState = TrainingState.RUNNING
+        restoreTrainingView()
+    }
+    
+    /**
+     * Restore training view without changing state
+     */
+    private fun restoreTrainingView() {
         val contentArea = document.getElementById("content-area")
+        
+        // Check if training container already exists (e.g., when resuming from pause)
+        val existingContainer = contentArea?.querySelector(".training-container")
+        if (existingContainer != null) {
+            // Container already exists, just update buttons
+            updateTrainingButtons()
+            return
+        }
+        
+        // No existing container, create fresh one
         contentArea?.innerHTML = ""
         
         val trainingContainer = document.createElement("div").apply {
@@ -175,42 +317,31 @@ object DisplayAreaComponent {
     }
     
     /**
-     * Show paused state
+     * Show paused state (delegates to centralized pause method)
      */
     fun showPaused() {
-        trainingState = TrainingState.PAUSED
-        val currentActionDisplay = document.getElementById("current-action-display")
-        currentActionDisplay?.innerHTML = """
-            <div class="paused-message">
-                <h2>⏸️ Training Paused</h2>
-                <p>Click "Start" to resume</p>
-            </div>
-        """
-        updateTrainingButtons()
+        pauseTraining()
     }
     
     /**
      * Resume from paused state
      */
     fun showResumed() {
+        currentMode = DisplayMode.TRAINING
         trainingState = TrainingState.RUNNING
-        updateTrainingButtons()
+        restoreTrainingView()
     }
     
     /**
      * Show stopped message
      */
     fun showStopped() {
-        currentMode = DisplayMode.WELCOME
-        trainingState = TrainingState.IDLE
-        val contentArea = document.getElementById("content-area")
-        contentArea?.innerHTML = """
+        resetToIdle("""
             <div class="welcome-message">
                 <p>⏹️ Training stopped</p>
                 <p class="hint">Click "Start" to begin again</p>
             </div>
-        """
-        updateTrainingButtons()
+        """)
     }
     
     /**
@@ -245,6 +376,15 @@ object DisplayAreaComponent {
             actions.joinToString(" → ") { it.displayName() }
         }
         preview?.innerHTML = """<div class="preview-text">Combination: $formattedSoFar</div>"""
+    }
+    
+    /**
+     * Set progress bar to specific percentage
+     */
+    fun setProgressBar(progress: Float) {
+        val percentage = (progress * 100).toInt()
+        val progressBar = document.getElementById("progress-bar")
+        progressBar?.setAttribute("style", "width: $percentage%")
     }
     
     /**
@@ -291,6 +431,7 @@ object DisplayAreaComponent {
      */
     private fun updateTrainingButtons() {
         val startBtn = document.getElementById("start-btn") as? HTMLElement
+        val resumeBtn = document.getElementById("resume-btn") as? HTMLElement
         val pauseBtn = document.getElementById("pause-btn") as? HTMLElement
         val stopBtn = document.getElementById("stop-btn") as? HTMLElement
         
@@ -298,18 +439,21 @@ object DisplayAreaComponent {
             TrainingState.IDLE -> {
                 // Show only Start button
                 startBtn?.setAttribute("style", "display: inline-block;")
+                resumeBtn?.setAttribute("style", "display: none;")
                 pauseBtn?.setAttribute("style", "display: none;")
                 stopBtn?.setAttribute("style", "display: none;")
             }
             TrainingState.RUNNING -> {
                 // Show Pause and Stop buttons
                 startBtn?.setAttribute("style", "display: none;")
+                resumeBtn?.setAttribute("style", "display: none;")
                 pauseBtn?.setAttribute("style", "display: inline-block;")
                 stopBtn?.setAttribute("style", "display: inline-block;")
             }
             TrainingState.PAUSED -> {
-                // Show Start (resume) and Stop buttons
-                startBtn?.setAttribute("style", "display: inline-block;")
+                // Show Resume and Stop buttons
+                startBtn?.setAttribute("style", "display: none;")
+                resumeBtn?.setAttribute("style", "display: inline-block;")
                 pauseBtn?.setAttribute("style", "display: none;")
                 stopBtn?.setAttribute("style", "display: inline-block;")
             }
