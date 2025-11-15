@@ -33,6 +33,7 @@ object DisplayAreaComponent {
     private var currentMode = DisplayMode.WELCOME
     private var onApplyCallback: (() -> Unit)? = null
     private var trainingState = TrainingState.IDLE
+    private var modeBeforeInfo: DisplayMode? = null  // Store mode before showing info views
     
     fun create(
         config: TrainingConfiguration,
@@ -55,9 +56,9 @@ object DisplayAreaComponent {
             // Control Panel Section
             appendChild(ControlPanelMolecule.create(
                 onConfiguration = {
-                    // Toggle: if already showing config, go back to welcome
+                    // Toggle: if already showing config, restore previous state
                     if (currentMode == DisplayMode.CONFIGURATION) {
-                        showWelcome()
+                        restorePreviousMode()
                     } else {
                         onConfiguration(it)  // Call the app's handler which will call showConfiguration
                     }
@@ -67,17 +68,17 @@ object DisplayAreaComponent {
                 onPause = onPause,
                 onStop = onStop,
                 onPreview = {
-                    // Toggle: if already showing preview, go back to welcome
+                    // Toggle: if already showing preview, restore previous state
                     if (currentMode == DisplayMode.PREVIEW) {
-                        showWelcome()
+                        restorePreviousMode()
                     } else {
                         onPreview(it)
                     }
                 },
                 onStrikeLegend = {
-                    // Toggle: if already showing legend, go back to welcome
+                    // Toggle: if already showing legend, restore previous state
                     if (currentMode == DisplayMode.STRIKE_LEGEND) {
-                        showWelcome()
+                        restorePreviousMode()
                     } else {
                         onStrikeLegend(it)
                     }
@@ -93,6 +94,7 @@ object DisplayAreaComponent {
      * Show the strike notation legend/reference in the content area
      */
     fun showStrikeLegend() {
+        modeBeforeInfo = currentMode  // Store previous mode
         currentMode = DisplayMode.STRIKE_LEGEND
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
@@ -125,6 +127,58 @@ object DisplayAreaComponent {
      */
     fun getCurrentMode(): DisplayMode = currentMode
     
+    /**
+     * Restore the previous mode before info view was shown
+     */
+    private fun restorePreviousMode() {
+        when (modeBeforeInfo) {
+            DisplayMode.TRAINING -> {
+                // If we were in training and paused, show the paused state
+                if (trainingState == TrainingState.PAUSED) {
+                    showPausedAfterInfo()
+                } else {
+                    // Should not happen, but restore training view just in case
+                    restoreTrainingView()
+                }
+            }
+            else -> showWelcome()
+        }
+        modeBeforeInfo = null
+    }
+    
+    /**
+     * Centralized method to pause training and show paused state
+     * Used by both Pause button and info buttons during active training
+     */
+    fun pauseTraining() {
+        trainingState = TrainingState.PAUSED
+        val currentActionDisplay = document.getElementById("current-action-display")
+        currentActionDisplay?.innerHTML = """
+            <div class="paused-message">
+                <h2>⏸️ Training Paused</h2>
+                <p>Click "Resume" to continue</p>
+            </div>
+        """
+        updateTrainingButtons()
+    }
+    
+    /**
+     * Show paused state after returning from info view
+     * Different from pauseTraining() as we're already paused, just need to restore the UI
+     */
+    private fun showPausedAfterInfo() {
+        currentMode = DisplayMode.TRAINING
+        restoreTrainingView()
+        // Update the current action display to show paused message
+        val currentActionDisplay = document.getElementById("current-action-display")
+        currentActionDisplay?.innerHTML = """
+            <div class="paused-message">
+                <h2>⏸️ Training Paused</h2>
+                <p>Click "Resume" to continue</p>
+            </div>
+        """
+    }
+    
     private fun createContentArea(): HTMLElement {
         return document.createElement("div").apply {
             setAttribute("class", "content-area")
@@ -143,6 +197,7 @@ object DisplayAreaComponent {
      * Show configuration form in the content area
      */
     fun showConfiguration(config: TrainingConfiguration, onApply: () -> Unit) {
+        modeBeforeInfo = currentMode  // Store previous mode
         currentMode = DisplayMode.CONFIGURATION
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
@@ -208,18 +263,10 @@ object DisplayAreaComponent {
     }
     
     /**
-     * Show paused state
+     * Show paused state (delegates to centralized pause method)
      */
     fun showPaused() {
-        trainingState = TrainingState.PAUSED
-        val currentActionDisplay = document.getElementById("current-action-display")
-        currentActionDisplay?.innerHTML = """
-            <div class="paused-message">
-                <h2>⏸️ Training Paused</h2>
-                <p>Click "Resume" to continue</p>
-            </div>
-        """
-        updateTrainingButtons()
+        pauseTraining()
     }
     
     /**
@@ -251,6 +298,7 @@ object DisplayAreaComponent {
      * Show combo preview
      */
     fun showPreview(combo: List<Action>, formatted: String) {
+        modeBeforeInfo = currentMode  // Store previous mode
         currentMode = DisplayMode.PREVIEW
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""

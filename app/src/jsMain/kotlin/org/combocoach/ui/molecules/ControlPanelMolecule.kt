@@ -48,8 +48,8 @@ object ControlPanelMolecule {
             
             appendChild(ButtonAtom.create("▶️ Start", "btn btn-success", "start-btn", onStart))
             
-            // Create resume button but hide it initially
-            appendChild(ButtonAtom.create("▶️ Resume", "btn btn-success", "resume-btn", onResume).apply {
+            // Create resume button but hide it initially (blue color to distinguish from Start)
+            appendChild(ButtonAtom.create("▶️ Resume", "btn btn-info", "resume-btn", onResume).apply {
                 setAttribute("style", "display: none;")
             })
             

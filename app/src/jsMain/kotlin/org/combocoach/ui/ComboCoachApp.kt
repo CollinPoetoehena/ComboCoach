@@ -84,7 +84,7 @@ class ComboCoachApp(private val rootElement: Element) {
     private fun handleInfoButtonClick(showInfoView: () -> Unit) {
         if (trainerManager.isTrainingActive()) {
             trainerManager.pauseTraining()
-            DisplayAreaComponent.setTrainingState(DisplayAreaComponent.TrainingState.PAUSED)
+            DisplayAreaComponent.pauseTraining()  // Use centralized pause method
         }
         showInfoView()
     }
