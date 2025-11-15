@@ -89,8 +89,8 @@ class ComboCoachApp(private val rootElement: Element) {
      * Start interval training
      */
     private fun startTraining() {
-        val newConfig = DisplayAreaComponent.readConfiguration()
-        trainerManager.updateConfiguration(newConfig)
+        // Configuration is already stored in trainerManager (applied via applyConfiguration)
+        // Do NOT read from DOM again as the config form may not be visible (resulting in default config)
         DisplayAreaComponent.showTrainingSession()
         trainerManager.startTraining()
     }
