@@ -118,4 +118,25 @@ class TrainerManager {
      * Get current displayed actions (for preview updates during training)
      */
     fun getCurrentDisplayedActions(): List<Action> = currentDisplayedActions
+    
+    /**
+     * Get total completed combos
+     */
+    fun getCompletedCombos(): Int {
+        return trainer.getIntervalTrainer().getTotalCombinationsCompleted()
+    }
+    
+    /**
+     * Get current combination
+     */
+    fun getCurrentCombination(): List<Action> {
+        return trainer.getIntervalTrainer().getCurrentCombination()
+    }
+    
+    /**
+     * Get current progress (0.0 to 1.0)
+     */
+    fun getProgress(): Float {
+        return trainer.getIntervalTrainer().getProgress()
+    }
 }

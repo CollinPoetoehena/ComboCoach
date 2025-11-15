@@ -126,13 +126,16 @@ object DisplayAreaComponent {
         // Store the current mode before showing info view
         modeBeforeInfo = currentMode
         
-        // Pause the training logic and update button visibility
+        // If training is active (running, not paused), pause it
         if (isTrainingActive) {
             onPauseTraining()
             // Mark as paused and update buttons
             trainingState = TrainingState.PAUSED
             updateTrainingButtons()
-            // Store restoration callback
+            // Store restoration callback (only when actively pausing)
+            restoreTrainingCallback = onRestoreTraining
+        } else if (trainingState == TrainingState.PAUSED && restoreTrainingCallback == null) {
+            // Already paused but callback was consumed (now it is null) - restore it
             restoreTrainingCallback = onRestoreTraining
         }
         
@@ -346,6 +349,15 @@ object DisplayAreaComponent {
             actions.joinToString(" → ") { it.displayName() }
         }
         preview?.innerHTML = """<div class="preview-text">Combination: $formattedSoFar</div>"""
+    }
+    
+    /**
+     * Set progress bar to specific percentage
+     */
+    fun setProgressBar(progress: Float) {
+        val percentage = (progress * 100).toInt()
+        val progressBar = document.getElementById("progress-bar")
+        progressBar?.setAttribute("style", "width: $percentage%")
     }
     
     /**

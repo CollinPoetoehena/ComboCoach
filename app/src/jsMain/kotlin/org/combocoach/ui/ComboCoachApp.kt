@@ -161,13 +161,25 @@ class ComboCoachApp(private val rootElement: Element) {
      * Restore training view with current state (actions, combo, stats)
      */
     private fun restoreTrainingWithState() {
+        // Recreate the training container
         DisplayAreaComponent.showTrainingSession()
         
-        // Restore the combination preview if training was active
-        DisplayAreaComponent.updateCombinationPreview(
-            trainerManager.getCurrentDisplayedActions(),
-            trainerManager.getConfig()
-        )
+        // Restore completed combos count
+        val completedCombos = trainerManager.getCompletedCombos()
+        DisplayAreaComponent.updateCompletedCombos(completedCombos)
+        
+        // Restore the combination preview (show only actions displayed so far, not full combo)
+        val displayedActions = trainerManager.getCurrentDisplayedActions()
+        if (displayedActions.isNotEmpty()) {
+            DisplayAreaComponent.updateCombinationPreview(
+                displayedActions,
+                trainerManager.getConfig()
+            )
+        }
+        
+        // Restore progress bar
+        val progress = trainerManager.getProgress()
+        DisplayAreaComponent.setProgressBar(progress)
         
         // Show paused message
         DisplayAreaComponent.showPaused()
