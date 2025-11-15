@@ -88,9 +88,19 @@ object DisplayAreaComponent {
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = """
             <div class="welcome-message">
-                <p>👊 Click "Config" to adjust settings, or "Start" to begin training!</p>
+                <p>👊 Click "Configuration" to adjust settings, or "Start Training" to begin!</p>
             </div>
         """
+    }
+    
+    /**
+     * Reset training state to IDLE (used after stopping training or applying config)
+     */
+    fun resetTrainingState() {
+        trainingState = TrainingState.IDLE
+        modeBeforeInfo = null
+        restoreTrainingCallback = null
+        updateTrainingButtons()
     }
     
     /**
@@ -125,6 +135,7 @@ object DisplayAreaComponent {
         
         // Store the current mode before showing info view (only if not already stored)
         // This preserves the original mode when switching between info views
+        // For example, when clicking different Information buttons it otherwise resets the state
         if (modeBeforeInfo == null) {
             modeBeforeInfo = currentMode
         }

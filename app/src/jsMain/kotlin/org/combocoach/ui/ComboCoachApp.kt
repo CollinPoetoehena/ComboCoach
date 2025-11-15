@@ -75,6 +75,8 @@ class ComboCoachApp(private val rootElement: Element) {
         trainerManager.stopTraining()
         val newConfig = DisplayAreaComponent.readConfiguration()
         trainerManager.updateConfiguration(newConfig)
+        // Reset training state to IDLE (clears paused state and updates buttons)
+        DisplayAreaComponent.resetTrainingState()
     }
 
     /**
