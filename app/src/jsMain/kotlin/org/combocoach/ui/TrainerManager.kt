@@ -77,6 +77,13 @@ class TrainerManager {
     }
     
     /**
+     * Check if training is paused
+     */
+    fun isTrainingPaused(): Boolean {
+        return trainer.getIntervalTrainer().isPaused()
+    }
+    
+    /**
      * Generate a preview combination
      * Returns a pair of (combo actions, formatted string)
      */

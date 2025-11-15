@@ -80,7 +80,8 @@ class ComboCoachApp(private val rootElement: Element) {
      */
     private fun showConfiguration() {
         trainerManager.stopTraining()
-        DisplayAreaComponent.showConfiguration(trainerManager.getConfig()) { 
+        DisplayAreaComponent.showConfiguration(trainerManager.getConfig()) {
+            // TODO: why is this needed exactly, and what does this do?
             applyConfiguration() 
         }
     }
@@ -99,8 +100,8 @@ class ComboCoachApp(private val rootElement: Element) {
      * Start or resume training based on current state
      */
     private fun startOrResumeTraining() {
-        if (trainerManager.isTrainingActive()) {
-            // Resume paused training
+        if (trainerManager.isTrainingPaused()) {
+            // Resume paused training - continue where we left off
             resumeTraining()
         } else {
             // Start new training session

@@ -105,6 +105,11 @@ class IntervalTrainer(
     fun isActive(): Boolean = isRunning
     
     /**
+     * Returns true if training is paused (has combination in progress but not running)
+     */
+    fun isPaused(): Boolean = !isRunning && currentCombination.isNotEmpty() && currentActionIndex < currentCombination.size
+    
+    /**
      * Returns the current combination
      */
     fun getCurrentCombination(): List<Action> = currentCombination
