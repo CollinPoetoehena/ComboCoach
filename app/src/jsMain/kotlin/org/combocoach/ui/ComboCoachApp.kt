@@ -6,12 +6,10 @@ import org.w3c.dom.Element
 import org.w3c.dom.HTMLElement
 
 /**
- * Main application class that orchestrates all UI components and manages application state.
- * Delegates training logic to TrainerManager for better separation of concerns.
+ * Main application orchestrator with simplified state management.
  */
 class ComboCoachApp(private val rootElement: Element) {
     private val trainerManager = TrainerManager()
-    private var isLegendExpanded = false
     
     init {
         setupTrainerCallbacks()
@@ -75,7 +73,6 @@ class ComboCoachApp(private val rootElement: Element) {
         trainerManager.stopTraining()
         val newConfig = DisplayAreaComponent.readConfiguration()
         trainerManager.updateConfiguration(newConfig)
-        // Reset training state to IDLE (clears paused state and updates buttons)
         DisplayAreaComponent.resetTrainingState()
     }
 
@@ -84,7 +81,7 @@ class ComboCoachApp(private val rootElement: Element) {
      */
     private fun showConfiguration() {
         DisplayAreaComponent.handleInfoButton(
-            targetMode = DisplayAreaComponent.DisplayMode.CONFIGURATION,
+            targetMode = TrainingStateManager.DisplayMode.CONFIGURATION,
             isTrainingActive = trainerManager.isTrainingActive(),
             onPauseTraining = { trainerManager.pauseTraining() },
             onRestoreTraining = { restoreTrainingWithState() },
@@ -106,36 +103,24 @@ class ComboCoachApp(private val rootElement: Element) {
         trainerManager.startTraining()
     }
     
-    /**
-     * Pause training
-     */
     private fun pauseTraining() {
         trainerManager.pauseTraining()
         DisplayAreaComponent.showPaused()
     }
     
-    /**
-     * Resume paused training
-     */
     private fun resumeTraining() {
         trainerManager.resumeTraining()
         DisplayAreaComponent.showResumed()
     }
     
-    /**
-     * Stop training
-     */
     private fun stopTraining() {
         trainerManager.stopTraining()
         DisplayAreaComponent.showStopped()
     }
     
-    /**
-     * Generate and display preview
-     */
     private fun generatePreview() {
         DisplayAreaComponent.handleInfoButton(
-            targetMode = DisplayAreaComponent.DisplayMode.PREVIEW,
+            targetMode = TrainingStateManager.DisplayMode.PREVIEW,
             isTrainingActive = trainerManager.isTrainingActive(),
             onPauseTraining = { trainerManager.pauseTraining() },
             onRestoreTraining = { restoreTrainingWithState() },
@@ -146,12 +131,9 @@ class ComboCoachApp(private val rootElement: Element) {
         )
     }
     
-    /**
-     * Show strike notation legend
-     */
     private fun showStrikeLegend() {
         DisplayAreaComponent.handleInfoButton(
-            targetMode = DisplayAreaComponent.DisplayMode.STRIKE_LEGEND,
+            targetMode = TrainingStateManager.DisplayMode.STRIKE_LEGEND,
             isTrainingActive = trainerManager.isTrainingActive(),
             onPauseTraining = { trainerManager.pauseTraining() },
             onRestoreTraining = { restoreTrainingWithState() },
