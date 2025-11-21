@@ -10,9 +10,6 @@ package org.combocoach.domain
  * For defensive actions against opponent strikes, we use "D" prefix:
  * D1 = Defend Jab, D2 = Defend Cross, D3 = Defend Hook, D4 = Defend Uppercut
  * 
- * References:
- * @see <a href="https://www.expertboxing.com/boxing-basics/boxing-punches">Standard Boxing Punch Numbering</a>
- * @see <a href="https://boxingscience.co.uk/understanding-punch-numbers/">Boxing Punch Numbers Explained</a>
  */
 sealed class Action {
     /**

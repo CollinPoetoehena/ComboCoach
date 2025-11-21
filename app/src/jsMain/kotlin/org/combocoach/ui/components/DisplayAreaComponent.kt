@@ -3,7 +3,7 @@ package org.combocoach.ui.components
 import kotlinx.browser.document
 import org.combocoach.domain.Action
 import org.combocoach.domain.TrainingConfiguration
-import org.combocoach.ui.atoms.ButtonAtom
+import org.combocoach.ui.TrainingStateManager
 import org.combocoach.ui.molecules.*
 import org.w3c.dom.HTMLElement
 import org.w3c.dom.events.Event
@@ -16,25 +16,10 @@ import org.w3c.dom.events.Event
  */
 object DisplayAreaComponent {
     
-    enum class DisplayMode {
-        WELCOME,
-        CONFIGURATION,
-        TRAINING,
-        PREVIEW,
-        STRIKE_LEGEND
-    }
-    
-    enum class TrainingState {
-        IDLE,      // Not training
-        RUNNING,   // Training in progress
-        PAUSED     // Training paused
-    }
-    
-    private var currentMode = DisplayMode.WELCOME
+    private val stateManager = TrainingStateManager()
     private var onApplyCallback: (() -> Unit)? = null
-    private var trainingState = TrainingState.IDLE
-    private var modeBeforeInfo: DisplayMode? = null  // Store mode before showing info views
-    private var restoreTrainingCallback: (() -> Unit)? = null  // Callback to restore training state
+    
+    fun getStateManager(): TrainingStateManager = stateManager
     
     fun create(
         config: TrainingConfiguration,
@@ -69,137 +54,109 @@ object DisplayAreaComponent {
             appendChild(createContentArea())
         } as HTMLElement
     }
-
-    /**
-     * Show the strike notation legend/reference in the content area
-     */
+    
+    private fun createContentArea(): HTMLElement {
+        return document.createElement("div").apply {
+            setAttribute("class", "content-area")
+            setAttribute("id", "content-area")
+            innerHTML = """
+                <div class="welcome-message">
+                    <p>👊 Click "Config" to adjust settings, or "Start" to begin training!</p>
+                </div>
+            """
+        } as HTMLElement
+    }
+    
     fun showStrikeLegend() {
-        currentMode = DisplayMode.STRIKE_LEGEND
+        stateManager.setDisplayMode(TrainingStateManager.DisplayMode.STRIKE_LEGEND)
         val contentArea = document.getElementById("content-area")
         contentArea?.innerHTML = ""
         contentArea?.appendChild(StrikeLegendMolecule.create())
     }
     
-    /**
-     * Show welcome message
-     */
     fun showWelcome() {
-        currentMode = DisplayMode.WELCOME
-        val contentArea = document.getElementById("content-area")
-        contentArea?.innerHTML = """
+        stateManager.setDisplayMode(TrainingStateManager.DisplayMode.WELCOME)
+        updateContentArea("""
             <div class="welcome-message">
                 <p>👊 Click "Configuration" to adjust settings, or "Start Training" to begin!</p>
             </div>
-        """
+        """)
     }
     
-    /**
-     * Reset to IDLE state with optional custom message
-     * Centralizes all cleanup logic for stopping/resetting training
-     */
-    private fun resetToIdle(message: String? = null) {
-        currentMode = DisplayMode.WELCOME
-        trainingState = TrainingState.IDLE
-        modeBeforeInfo = null
-        restoreTrainingCallback = null
-        
-        val contentArea = document.getElementById("content-area")
-        contentArea?.innerHTML = message ?: """
-            <div class="welcome-message">
-                <p>👊 Click "Configuration" to adjust settings, or "Start Training" to begin!</p>
-            </div>
-        """
-        
-        updateTrainingButtons()
-    }
-    
-    /**
-     * Reset training state to IDLE (used after applying config)
-     */
     fun resetTrainingState() {
-        resetToIdle()
-    }
-    
-    /**
-     * Set training state and update button visibility
-     */
-    fun setTrainingState(state: TrainingState) {
-        trainingState = state
+        stateManager.reset()
+        showWelcome()
         updateTrainingButtons()
     }
-    
-    /**
-     * Get current display mode
-     */
-    fun getCurrentMode(): DisplayMode = currentMode
     
     /**
      * Centralized handler for all info button clicks
      * Handles toggle logic, pause, mode storage, and delegates to specific show method
      */
     fun handleInfoButton(
-        targetMode: DisplayMode,
+        targetMode: TrainingStateManager.DisplayMode,
         isTrainingActive: Boolean,
         onPauseTraining: () -> Unit,
         onRestoreTraining: (() -> Unit)?,
         showView: () -> Unit
     ) {
-        // Check if we're toggling off (already showing this info view)
-        if (currentMode == targetMode) {
+        if (stateManager.getDisplayMode() == targetMode) {
             restorePreviousMode()
             return
         }
         
-        // Store the current mode before showing info view (only if not already stored)
-        // This preserves the original mode when switching between info views
-        // For example, when clicking different Information buttons it otherwise resets the state
-        if (modeBeforeInfo == null) {
-            modeBeforeInfo = currentMode
-        }
+        stateManager.storeModeBeforeInfo()
         
-        // If training is active (running, not paused), pause it
         if (isTrainingActive) {
             onPauseTraining()
-            // Mark as paused and update buttons
-            trainingState = TrainingState.PAUSED
+            stateManager.setState(TrainingStateManager.State.PAUSED)
             updateTrainingButtons()
-            // Store restoration callback (only when actively pausing)
-            restoreTrainingCallback = onRestoreTraining
-        } else if (trainingState == TrainingState.PAUSED && restoreTrainingCallback == null) {
+            // Set restore callback 
+            onRestoreTraining?.let { stateManager.setRestoreCallback(it) }
+        } else if (stateManager.isPaused() && stateManager.getRestoreCallback() == null) {
             // Already paused but callback was consumed (now it is null) - restore it
-            restoreTrainingCallback = onRestoreTraining
+            onRestoreTraining?.let { stateManager.setRestoreCallback(it) }
         }
         
-        // Show the info view (this will set currentMode to targetMode)
         showView()
     }
     
-    /**
-     * Restore the previous mode before info view was shown
-     * Called when toggling info buttons off
-     */
     fun restorePreviousMode() {
-        when (modeBeforeInfo) {
-            DisplayMode.TRAINING -> {
-                // If we were in training and paused, show the paused state
-                if (trainingState == TrainingState.PAUSED) {
+        when (stateManager.getModeBeforeInfo()) {
+            TrainingStateManager.DisplayMode.TRAINING -> {
+                if (stateManager.isPaused()) {
                     showPausedAfterInfo()
                 } else {
-                    // Should not happen, but restore training view just in case
                     restoreTrainingView()
                 }
             }
             else -> showWelcome()
         }
-        modeBeforeInfo = null
+        stateManager.clearModeBeforeInfo()
     }
     
-    /**
-     * Centralized method to pause training and show paused state
-     * Used by both Pause button and info buttons during active training
-     */
-    fun pauseTraining() {
-        trainingState = TrainingState.PAUSED
+    fun showConfiguration(config: TrainingConfiguration, onApply: () -> Unit) {
+        stateManager.setDisplayMode(TrainingStateManager.DisplayMode.CONFIGURATION)
+        val contentArea = document.getElementById("content-area")
+        contentArea?.innerHTML = ""
+        contentArea?.appendChild(ConfigFormMolecule.create(config))
+        
+        ConfigFormMolecule.setupModeSelectListener()
+        
+        document.getElementById("apply-config-btn")?.addEventListener("click", {
+            onApply()
+            showWelcome()
+        })
+    }
+    
+    fun showTrainingSession() {
+        stateManager.setDisplayMode(TrainingStateManager.DisplayMode.TRAINING)
+        stateManager.setState(TrainingStateManager.State.RUNNING)
+        restoreTrainingView()
+    }
+    
+    fun showPaused() {
+        stateManager.setState(TrainingStateManager.State.PAUSED)
         val currentActionDisplay = document.getElementById("current-action-display")
         currentActionDisplay?.innerHTML = """
             <div class="paused-message">
@@ -210,92 +167,92 @@ object DisplayAreaComponent {
         updateTrainingButtons()
     }
     
-    /**
-     * Show paused state after returning from info view
-     * Rebuilds the training container and shows the paused message
-     */
-    private fun showPausedAfterInfo() {
-        currentMode = DisplayMode.TRAINING
-        
-        // Use restoration callback if available (preserves training state)
-        if (restoreTrainingCallback != null) {
-            restoreTrainingCallback?.invoke()
-            restoreTrainingCallback = null
-        } else {
-            // Fallback: restore with empty training view
-            restoreTrainingView()
-            val currentActionDisplay = document.getElementById("current-action-display")
-            currentActionDisplay?.innerHTML = """
-                <div class="paused-message">
-                    <h2>⏸️ Training Paused</h2>
-                    <p>Click "Resume" to continue</p>
-                </div>
-            """
-        }
-    }
-    
-    private fun createContentArea(): HTMLElement {
-        return document.createElement("div").apply {
-            setAttribute("class", "content-area")
-            setAttribute("id", "content-area")
-            
-            // Initial welcome message
-            innerHTML = """
-                <div class="welcome-message">
-                    <p>👊 Click "Config" to adjust settings, or "Start" to begin training!</p>
-                </div>
-            """
-        } as HTMLElement
-    }
-    
-    /**
-     * Show configuration form in the content area
-     */
-    fun showConfiguration(config: TrainingConfiguration, onApply: () -> Unit) {
-        currentMode = DisplayMode.CONFIGURATION
-        val contentArea = document.getElementById("content-area")
-        contentArea?.innerHTML = ""
-        contentArea?.appendChild(ConfigFormMolecule.create(config))
-        
-        // Setup listeners after DOM is created
-        ConfigFormMolecule.setupModeSelectListener()
-        
-        // Attach apply button listener - also close configuration after applying
-        document.getElementById("apply-config-btn")?.addEventListener("click", {
-            onApply()
-            showWelcome()  // Close configuration view after applying
-        })
-    }
-    
-    /**
-     * Show training session with stats and action display
-     */
-    fun showTrainingSession() {
-        currentMode = DisplayMode.TRAINING
-        trainingState = TrainingState.RUNNING
+    fun showResumed() {
+        stateManager.setDisplayMode(TrainingStateManager.DisplayMode.TRAINING)
+        stateManager.setState(TrainingStateManager.State.RUNNING)
         restoreTrainingView()
     }
     
-    /**
-     * Restore training view without changing state
-     */
+    fun showStopped() {
+        stateManager.reset()
+        updateContentArea("""
+            <div class="welcome-message">
+                <p>⏹️ Training stopped</p>
+                <p class="hint">Click "Start" to begin again</p>
+            </div>
+        """)
+        updateTrainingButtons()
+    }
+    
+    fun showPreview(combo: List<Action>, formatted: String) {
+        stateManager.setDisplayMode(TrainingStateManager.DisplayMode.PREVIEW)
+        val contentArea = document.getElementById("content-area")
+        contentArea?.innerHTML = ""
+        contentArea?.appendChild(PreviewDisplayMolecule.create(combo, formatted))
+    }
+    
+    fun displayAction(action: Action, index: Int, total: Int) {
+        val currentActionDisplay = document.getElementById("current-action-display")
+        currentActionDisplay?.innerHTML = ""
+        currentActionDisplay?.appendChild(ActionCardMolecule.create(action, index, total))
+        updateProgressBar(index, total)
+    }
+    
+    fun updateCombinationPreview(actions: List<Action>, config: TrainingConfiguration) {
+        val preview = document.getElementById("combination-preview")
+        val formatted = if (config.useNumberNotation) {
+            actions.joinToString(" ") { it.toNumber() }
+        } else {
+            actions.joinToString(" → ") { it.displayName() }
+        }
+        preview?.innerHTML = """<div class="preview-text">Combination: $formatted</div>"""
+    }
+    
+    fun setProgressBar(progress: Float) {
+        val percentage = (progress * 100).toInt()
+        document.getElementById("progress-bar")?.setAttribute("style", "width: $percentage%")
+    }
+    
+    fun updateCompletedCombos(comboNumber: Int) {
+        TrainingStatsMolecule.updateCompletedCombos(comboNumber)
+    }
+    
+    fun showWaitingMessage(secondsRemaining: Int) {
+        val currentActionDisplay = document.getElementById("current-action-display")
+        currentActionDisplay?.innerHTML = ""
+        currentActionDisplay?.appendChild(ActionCardMolecule.showWaiting(secondsRemaining))
+        resetProgressBar()
+    }
+    
+    fun readConfiguration(): TrainingConfiguration {
+        return ConfigFormMolecule.readConfiguration()
+    }
+    
+    private fun showPausedAfterInfo() {
+        stateManager.setDisplayMode(TrainingStateManager.DisplayMode.TRAINING)
+        
+        val restoreCallback = stateManager.getRestoreCallback()
+        if (restoreCallback != null) {
+            restoreCallback()
+            stateManager.clearRestoreCallback()
+        } else {
+            restoreTrainingView()
+            showPaused()
+        }
+    }
+    
     private fun restoreTrainingView() {
         val contentArea = document.getElementById("content-area")
         
-        // Check if training container already exists (e.g., when resuming from pause)
-        val existingContainer = contentArea?.querySelector(".training-container")
-        if (existingContainer != null) {
-            // Container already exists, just update buttons
+        if (contentArea?.querySelector(".training-container") != null) {
             updateTrainingButtons()
             return
         }
         
-        // No existing container, create fresh one
         contentArea?.innerHTML = ""
         
         val trainingContainer = document.createElement("div").apply {
             setAttribute("class", "training-container")
-            
             appendChild(TrainingStatsMolecule.create())
             appendChild(document.createElement("div").apply {
                 setAttribute("id", "current-action-display")
@@ -316,146 +273,45 @@ object DisplayAreaComponent {
         updateTrainingButtons()
     }
     
-    /**
-     * Show paused state (delegates to centralized pause method)
-     */
-    fun showPaused() {
-        pauseTraining()
-    }
-    
-    /**
-     * Resume from paused state
-     */
-    fun showResumed() {
-        currentMode = DisplayMode.TRAINING
-        trainingState = TrainingState.RUNNING
-        restoreTrainingView()
-    }
-    
-    /**
-     * Show stopped message
-     */
-    fun showStopped() {
-        resetToIdle("""
-            <div class="welcome-message">
-                <p>⏹️ Training stopped</p>
-                <p class="hint">Click "Start" to begin again</p>
-            </div>
-        """)
-    }
-    
-    /**
-     * Show combo preview
-     */
-    fun showPreview(combo: List<Action>, formatted: String) {
-        currentMode = DisplayMode.PREVIEW
-        val contentArea = document.getElementById("content-area")
-        contentArea?.innerHTML = ""
-        contentArea?.appendChild(PreviewDisplayMolecule.create(combo, formatted))
-    }
-    
-    /**
-     * Display current action during training
-     */
-    fun displayAction(action: Action, index: Int, total: Int) {
-        val currentActionDisplay = document.getElementById("current-action-display")
-        currentActionDisplay?.innerHTML = ""
-        currentActionDisplay?.appendChild(ActionCardMolecule.create(action, index, total))
-        
-        updateProgressBar(index, total)
-    }
-    
-    /**
-     * Update combination preview text during training
-     */
-    fun updateCombinationPreview(actions: List<Action>, config: TrainingConfiguration) {
-        val preview = document.getElementById("combination-preview")
-        val formattedSoFar = if (config.useNumberNotation) {
-            actions.joinToString(" ") { it.toNumber() }
-        } else {
-            actions.joinToString(" → ") { it.displayName() }
-        }
-        preview?.innerHTML = """<div class="preview-text">Combination: $formattedSoFar</div>"""
-    }
-    
-    /**
-     * Set progress bar to specific percentage
-     */
-    fun setProgressBar(progress: Float) {
-        val percentage = (progress * 100).toInt()
-        val progressBar = document.getElementById("progress-bar")
-        progressBar?.setAttribute("style", "width: $percentage%")
-    }
-    
-    /**
-     * Update completed combos counter
-     */
-    fun updateCompletedCombos(comboNumber: Int) {
-        TrainingStatsMolecule.updateCompletedCombos(comboNumber)
-    }
-    
-    /**
-     * Show waiting message between combinations
-     */
-    fun showWaitingMessage(secondsRemaining: Int) {
-        val currentActionDisplay = document.getElementById("current-action-display")
-        currentActionDisplay?.innerHTML = ""
-        currentActionDisplay?.appendChild(ActionCardMolecule.showWaiting(secondsRemaining))
-        
-        resetProgressBar()
-    }
-    
-    /**
-     * Read configuration from the form
-     */
-    fun readConfiguration(): TrainingConfiguration {
-        return ConfigFormMolecule.readConfiguration()
+    private fun updateContentArea(html: String) {
+        document.getElementById("content-area")?.innerHTML = html
     }
     
     private fun updateProgressBar(index: Int, total: Int) {
         val progress = (index.toFloat() / total.toFloat() * 100).toInt()
-        val progressBar = document.getElementById("progress-bar")
-        progressBar?.setAttribute("style", "width: $progress%")
+        document.getElementById("progress-bar")?.setAttribute("style", "width: $progress%")
     }
     
     private fun resetProgressBar() {
-        val progressBar = document.getElementById("progress-bar")
-        progressBar?.setAttribute("style", "width: 0%")
+        document.getElementById("progress-bar")?.setAttribute("style", "width: 0%")
     }
     
-    /**
-     * Update training buttons visibility based on training state
-     * - IDLE: Show Start only
-     * - RUNNING: Show Pause and Stop
-     * - PAUSED: Show Start (resume) and Stop
-     */
     private fun updateTrainingButtons() {
-        val startBtn = document.getElementById("start-btn") as? HTMLElement
-        val resumeBtn = document.getElementById("resume-btn") as? HTMLElement
-        val pauseBtn = document.getElementById("pause-btn") as? HTMLElement
-        val stopBtn = document.getElementById("stop-btn") as? HTMLElement
+        val buttons = mapOf(
+            "start-btn" to document.getElementById("start-btn") as? HTMLElement,
+            "resume-btn" to document.getElementById("resume-btn") as? HTMLElement,
+            "pause-btn" to document.getElementById("pause-btn") as? HTMLElement,
+            "stop-btn" to document.getElementById("stop-btn") as? HTMLElement
+        )
         
-        when (trainingState) {
-            TrainingState.IDLE -> {
-                // Show only Start button
-                startBtn?.setAttribute("style", "display: inline-block;")
-                resumeBtn?.setAttribute("style", "display: none;")
-                pauseBtn?.setAttribute("style", "display: none;")
-                stopBtn?.setAttribute("style", "display: none;")
+        when (stateManager.getState()) {
+            TrainingStateManager.State.IDLE -> {
+                buttons["start-btn"]?.setAttribute("style", "display: inline-block;")
+                buttons["resume-btn"]?.setAttribute("style", "display: none;")
+                buttons["pause-btn"]?.setAttribute("style", "display: none;")
+                buttons["stop-btn"]?.setAttribute("style", "display: none;")
             }
-            TrainingState.RUNNING -> {
-                // Show Pause and Stop buttons
-                startBtn?.setAttribute("style", "display: none;")
-                resumeBtn?.setAttribute("style", "display: none;")
-                pauseBtn?.setAttribute("style", "display: inline-block;")
-                stopBtn?.setAttribute("style", "display: inline-block;")
+            TrainingStateManager.State.RUNNING -> {
+                buttons["start-btn"]?.setAttribute("style", "display: none;")
+                buttons["resume-btn"]?.setAttribute("style", "display: none;")
+                buttons["pause-btn"]?.setAttribute("style", "display: inline-block;")
+                buttons["stop-btn"]?.setAttribute("style", "display: inline-block;")
             }
-            TrainingState.PAUSED -> {
-                // Show Resume and Stop buttons
-                startBtn?.setAttribute("style", "display: none;")
-                resumeBtn?.setAttribute("style", "display: inline-block;")
-                pauseBtn?.setAttribute("style", "display: none;")
-                stopBtn?.setAttribute("style", "display: inline-block;")
+            TrainingStateManager.State.PAUSED -> {
+                buttons["start-btn"]?.setAttribute("style", "display: none;")
+                buttons["resume-btn"]?.setAttribute("style", "display: inline-block;")
+                buttons["pause-btn"]?.setAttribute("style", "display: none;")
+                buttons["stop-btn"]?.setAttribute("style", "display: inline-block;")
             }
         }
     }
