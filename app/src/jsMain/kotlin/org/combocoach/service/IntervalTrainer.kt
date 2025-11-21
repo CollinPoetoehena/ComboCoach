@@ -117,10 +117,13 @@ class IntervalTrainer(
     
     /**
      * Returns the current progress (0.0 to 1.0)
+     * Note: currentActionIndex points to the next action to display,
+     * so we add 1 to reflect the action currently being shown
      */
     fun getProgress(): Float {
         if (currentCombination.isEmpty()) return 0f
-        return currentActionIndex.toFloat() / currentCombination.size.toFloat()
+        // Add 1 because currentActionIndex is the next to display, but we've already shown the current one
+        return (currentActionIndex + 1).toFloat() / currentCombination.size.toFloat()
     }
     
     private fun displayCurrentAction() {
