@@ -1,6 +1,8 @@
 # UI Component Architecture
 
-This document describes the refactored UI architecture following atomic design principles.
+TODO: extend this a bit and use the latest version of the code/setup for this in the future.
+
+This document describes the UI architecture following atomic design principles.
 
 ## Architecture Overview
 

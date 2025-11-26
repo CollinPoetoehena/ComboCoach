@@ -1,4 +1,9 @@
+
+# Ignore all JAR files
 *.jar
+# But keep Gradle wrapper JAR
+!gradle/wrapper/gradle-wrapper.jar
+
 # Ignore Gradle project-specific cache directory
 .gradle
 

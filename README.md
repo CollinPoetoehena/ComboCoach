@@ -1,111 +1,54 @@
-# ComboCoach
+# ComboCoach 🥊
 
-A Kotlin-based boxing training application that generates random combinations to help you improve your skills.
+Web-based boxing trainer that generates realistic combinations respecting natural body mechanics and position transitions.
+
+[![Kotlin](https://img.shields.io/badge/Kotlin-1.9+-7F52FF.svg?style=flat&logo=kotlin)](https://kotlinlang.org)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 ## Features
 
-- **Random Combination Generator**: Creates varied strike combinations using proper boxing notation (1-6)
-- **Visual Color Cues**: Each combination is assigned a random color for quick visual identification
-- **Defensive Moves**: Includes slips, rolls, ducks, blocks, and parries
-- **Opponent Strikes**: Simulates incoming attacks that you need to defend against (marked with ⚠️)
-- **Training Sessions**: Run multiple rounds of combinations
-- **Training History**: Track your generated combinations
-- **OOP Design**: Built with Kotlin best practices using proper object-oriented design
+- **Flow-Based Combinations**: Position-aware generation (neutral, lead extended, rear extended)
+- **Training Modes**: Attack only, defense only, or mixed
+- **Interval Training**: Customizable timing between actions
+- **Stance Support**: Orthodox and Southpaw
+- **Standard Boxing Notation**: 1-6 for strikes, D1-D4 for defense
 
-TODO: update this with latest features
-
-## Strike Notation
-
-- **1** - Jab
-- **2** - Cross
-- **3** - Lead Hook
-- **4** - Rear Hook
-- **5** - Lead Uppercut
-- **6** - Rear Uppercut
-
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Java OpenJDK: https://www.geeksforgeeks.org/installation-guide/how-to-install-openjdk-in-linux/
 - SDKMAN! to install Kotlin: https://sdkman.io/install/
 - Optional: Install Homebrew on Linux as package manager: https://docs.brew.sh/Homebrew-on-Linux
-- Install Gradle using SDKMAN! or Homebrew on Linux: https://gradle.org/install/
 - Install Kotlin using SDKMAN! or Homebrew on Linux: https://kotlinlang.org/docs/command-line.html#install-the-compiler
+- Gradle included via wrapper: `./gradlew`
 
-### Initialize Kotlin Project (ONLY once)
-```sh
-gradle init --type kotlin-application --dsl kotlin 
-```
+## Quick Start
 
-### Running the Application
-
-```sh
-# Build the project:
-./gradlew build
-
-# Run the project, will be available at http://localhost:8080
+```bash
+git clone https://github.com/CollinPoetoehena/ComboCoach.git
+cd ComboCoach
 ./gradlew jsBrowserDevelopmentRun --continuous
-
-# Run tests:
-./gradlew test
 ```
+
+Access at `http://localhost:8080`
+
+**Run tests**: `./gradlew test`
 
 ## Usage
 
-TODO: generate with AI
-```
+1. Click ⚙️ Configuration to set training mode, stance, and intervals
+2. Click "Apply Configuration" then "Start Training"
+3. Follow on-screen actions
+4. Use Pause/Resume/Stop controls as needed
 
-### Running the Application
+## Documentation
 
-```sh
-# Run the project:
-./gradlew run
-
-# Run tests:
-./gradlew test
-```
-
-## Usage
-
-When you run the application, you'll see a menu with the following options:
-
-1. **Generate Single Combination** - Get one random combination
-2. **Start Training Session** - Generate multiple combinations for a training session
-3. **View Training History** - See all previously generated combinations
-4. **Clear History** - Reset your training history
-5. **Show Legend** - Display the notation guide
-6. **Exit** - Close the application
-
-## Architecture
-
-The application follows clean architecture principles with the following structure:
-
-- **Domain Layer** (`domain/`): Core business entities and enums
-  - `Strike` - Attack types
-  - `DefensiveMove` - Defensive techniques
-  - `OpponentStrike` - Incoming attacks to defend
-  - `ComboElement` - Sealed class for combination elements
-  - `Combination` - Complete combination with color
-  - `ComboColor` - Visual color cues
-
-- **Service Layer** (`service/`): Business logic
-  - `CombinationGenerator` - Generates random combinations
-  - `ComboTrainer` - Manages training sessions
-
-- **UI Layer** (`ui/`): User interface
-  - `ConsoleUI` - Interactive console interface
-
-## Future Enhancements
-
-- Sound effects for strikes and combinations
-- Timed combinations with countdown
-- Difficulty levels
-- Combination patterns and drills
-- Statistics and performance tracking
-- Custom combination builder
-- Mobile/GUI application
+- **[README.md](./README.md)** - Project overview and quick start
+- **[TechStack.md](./docs/TechStack.md)** - Kotlin/JS, frontend-only architecture
+- **[Design.md](./docs/Design.md)** - Architecture layers, boxing flow system
+- **[Testing.md](./docs/Testing.md)** - Testing guide and examples
+- **[Deployment.md](./docs/Deployment.md)** - Deploy to Vercel, Netlify, GitHub Pages, Docker
+- **[UIArchitecture.md](./docs/UIArchitecture.md)** - Atomic design components
 
 ## License
 
-This project is generated as a sample application.
+MIT License - see [LICENSE](LICENSE)
