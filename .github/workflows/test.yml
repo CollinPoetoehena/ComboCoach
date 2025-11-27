@@ -1,31 +1,51 @@
-name: Test
+name: CI/CD Pipeline
 
+# Trigger this workflow on:
+# - Push to main or docs-and-tests branches
+# - Pull requests targeting main branch
 on:
   push:
     branches: [ docs-and-tests, main ]
   pull_request:
     branches: [ main ]
 
+# Define reusable variables for the entire workflow
+env:
+  JAVA_VERSION: '17'
+  JAVA_DISTRIBUTION: 'temurin'
+  NODE_VERSION: '20'
+  VERCEL_VERSION: 'latest'
+  # Actual Gradle output directory for production build
+  BUILD_OUTPUT_DIR: 'app/build/kotlin-webpack/js/productionExecutable'
+  # Where index.html is located
+  RESOURCES_DIR: 'app/build/processedResources/js/main'
+
 jobs:
   test:
+    name: Run Tests
     runs-on: ubuntu-latest
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up JDK 17
+      # Set up Java environment for Kotlin/JS compilation
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
       
+      # Enable Gradle caching to speed up builds
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       
-      - name: Run tests
-        run: ./gradlew jsNodeTest
+      # Run unit tests using Node.js environment (no browser needed)
+      - name: Run Node.js tests
+        run: ./gradlew clean jsNodeTest
       
+      # Upload HTML test reports for viewing in GitHub Actions UI
+      # Runs even if tests fail (if: always())
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
@@ -33,6 +53,8 @@ jobs:
           name: test-results
           path: app/build/reports/tests/jsNodeTest/
       
+      # Generate test report visible in GitHub Actions checks
+      # Parses JUnit XML format and displays in PR checks
       - name: Publish test report
         uses: dorny/test-reporter@v1
         if: always()
@@ -40,3 +62,100 @@ jobs:
           name: Test Results
           path: app/build/test-results/jsNodeTest/*.xml
           reporter: java-junit
+
+  build:
+    name: Build Production Bundle
+    runs-on: ubuntu-latest
+    needs: test  # Only run after tests pass
+    # Only build on main branch (not on feature branches or PRs)
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+      
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      
+      # Compile Kotlin/JS to optimized JavaScript bundle with Webpack
+      # Output: app/build/kotlin-webpack/js/productionExecutable/ (JS)
+      #         app/build/processedResources/js/main/ (HTML)
+      - name: Build production bundle
+        run: ./gradlew jsBrowserProductionWebpack
+      
+      # Copy index.html to the same directory as the JS bundle for deployment
+      - name: Prepare deployment directory
+        run: |
+          mkdir -p deploy
+          cp ${{ env.RESOURCES_DIR }}/index.html deploy/
+          cp ${{ env.BUILD_OUTPUT_DIR }}/*.js deploy/
+          cp ${{ env.BUILD_OUTPUT_DIR }}/*.js.map deploy/ 2>/dev/null || true
+      
+      # Upload compiled bundle for deployment job
+      # Artifacts are kept for 7 days for debugging
+      - name: Upload production artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-bundle
+          path: deploy/
+          retention-days: 7
+
+  deploy:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: build  # Only run after successful build
+    # Only deploy on main branch (production deployments only)
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Download the compiled bundle from build job
+      - name: Download production bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: production-bundle
+          path: deploy/
+      
+      # Install Vercel CLI globally
+      # Note: Requires Node.js 20+ (provided by ubuntu-latest)
+      - name: Install Vercel CLI
+        run: npm install --global vercel@${{ env.VERCEL_VERSION }}
+      
+      # Create vercel.json configuration for SPA routing
+      # This ensures all routes serve index.html (client-side routing)
+      - name: Create Vercel configuration
+        run: |
+          cat > deploy/vercel.json << 'EOF'
+          {
+            "version": 2,
+            "routes": [
+              {
+                "src": "/(.*)",
+                "dest": "/index.html"
+              }
+            ]
+          }
+          EOF
+      
+      # Download Vercel project configuration and environment variables
+      # Requires VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID secrets
+      - name: Pull Vercel Environment Information
+        working-directory: deploy
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      
+      # Deploy production bundle to Vercel
+      # All files in deploy/ directory will be deployed
+      - name: Deploy Project Artifacts to Vercel
+        working-directory: deploy
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}

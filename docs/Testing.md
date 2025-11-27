@@ -7,7 +7,7 @@ ComboCoach uses **Node.js-based unit tests** exclusively for testing business lo
 ### Why Node.js Tests Only?
 
 **Node.js tests are sufficient because:**
-- ✅ **Business Logic Focus**: 137 tests validate all domain models, service algorithms, and state management
+- ✅ **Business Logic Focus**: Tests validate all domain models, service algorithms, and state management
 - ✅ **Fast Execution**: Node.js tests run in 1-2 seconds vs 10-30 seconds for browser tests
 - ✅ **CI/CD Friendly**: No browser dependencies, works seamlessly in GitHub Actions and other CI systems
 - ✅ **Developer Experience**: Instant feedback during development with no browser startup overhead
@@ -63,27 +63,6 @@ The report includes:
 - Execution time per test
 - Detailed failure messages with stack traces
 - Test organization by package and class
-
-## Test Structure
-
-```
-app/src/jsTest/kotlin/org/combocoach/
-├── domain/
-│   ├── ActionTest.kt              # 11 tests - Action number notation, display names
-│   ├── DefensiveMoveTest.kt       # 3 tests - Defensive move properties
-│   ├── OpponentStrikeTest.kt      # 8 tests - Strike suggestions, validation
-│   ├── PositionTest.kt            # 15 tests - Position transitions, action validation
-│   ├── StanceTest.kt              # 5 tests - Orthodox/Southpaw hand mapping
-│   └── TrainingConfigurationTest.kt # 15 tests - Configuration validation
-├── service/
-│   ├── ComboTrainerTest.kt        # 9 tests - Trainer creation, combo generation
-│   ├── FlowCombinationGeneratorTest.kt # 20 tests - Flow validation, formatting
-│   └── IntervalTrainerTest.kt     # 16 tests - Interval timing, state management
-└── ui/
-    ├── NotificationManagerTest.kt  # 7 tests - Notification types, properties
-    ├── TrainerManagerTest.kt       # 11 tests - Manager state, callbacks
-    └── TrainingStateManagerTest.kt # 17 tests - State transitions, display modes
-```
 
 ## Best Practices
 

@@ -20,8 +20,8 @@ kotlin {
         // Browser configuration - for web application deployment
         browser {
             // Webpack configuration for bundling the application
-            commonWebpackConfig {
-                // Output filename for the compiled JavaScript bundle
+            // See detailed docs: https://kotlinlang.org/docs/js-project-setup.html#webpack-task
+            webpackTask {
                 outputFileName = "combocoach.js"
             }
             

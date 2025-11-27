@@ -17,6 +17,7 @@ ComboCoach is a **frontend-only** application built with Kotlin/JS. No backend, 
 
 ### Kotlin/JS with IR Compiler
 
+- Kotlin/JS details: https://kotlinlang.org/docs/js-project-setup.html
 - Modern type-safe language compiled to JavaScript
 - Null safety, sealed classes, data classes
 - Smaller bundles with IR compiler
