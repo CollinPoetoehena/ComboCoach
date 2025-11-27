@@ -41,7 +41,32 @@ kotlin {
         // - No browser installation required
         // - Perfect for unit testing business logic
         // - Works seamlessly in CI/CD pipelines
-        nodejs()
+        nodejs {
+            // Configure test task to always show test output
+            testTask {
+                testLogging {
+                    // Show detailed events during test execution
+                    events("passed", "skipped", "failed")
+                    // Show standard output and error streams
+                    showStandardStreams = false
+                    // Display the cause of failures
+                    showCauses = true
+                    showExceptions = true
+                    showStackTraces = true
+                    // Show test count summary after execution
+                    afterSuite(KotlinClosure2({ desc: TestDescriptor, result: TestResult ->
+                        if (desc.parent == null) { // Only print summary for the root suite
+                            println("\nTest Results: ${result.resultType}")
+                            println("   Tests run: ${result.testCount}")
+                            println("   Passed: ${result.successfulTestCount}")
+                            println("   Failed: ${result.failedTestCount}")
+                            println("   Skipped: ${result.skippedTestCount}")
+                            println("   Duration: ${result.endTime - result.startTime}ms\n")
+                        }
+                    }))
+                }
+            }
+        }
         
         // Generate executable JavaScript file (can be run directly)
         binaries.executable()
