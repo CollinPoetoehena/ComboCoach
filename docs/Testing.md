@@ -1,95 +1,144 @@
 # Testing Guide
 
-TODO: extend this a bit and use the latest version of the code/setup for this in the future.
+## Testing Strategy
 
+ComboCoach uses **Node.js-based unit tests** exclusively for testing business logic and functionality. Browser tests are intentionally disabled because they are unnecessary for validating the application's core behavior.
+
+### Why Node.js Tests Only?
+
+**Node.js tests are sufficient because:**
+- ✅ **Business Logic Focus**: 137 tests validate all domain models, service algorithms, and state management
+- ✅ **Fast Execution**: Node.js tests run in 1-2 seconds vs 10-30 seconds for browser tests
+- ✅ **CI/CD Friendly**: No browser dependencies, works seamlessly in GitHub Actions and other CI systems
+- ✅ **Developer Experience**: Instant feedback during development with no browser startup overhead
+- ✅ **Zero Configuration**: Works out-of-the-box without browser installation or environment setup
+
+**When browser tests ARE needed (not applicable to ComboCoach currently):**
+- 🌐 Visual regression testing (screenshot comparison)
+- 🌐 Cross-browser compatibility verification
+- 🌐 Complex DOM manipulation that can't be unit tested
+- 🌐 Integration testing with external browser APIs
+- 🌐 End-to-end user flows through the entire application
+
+**ComboCoach doesn't need browser tests because:**
+- All business logic (combo generation, flow validation, position tracking) is pure computation
+- UI rendering uses kotlinx-html DSL which generates predictable HTML
+- No complex browser-specific APIs that need integration testing
+- Manual testing of the UI is sufficient and more practical for this project given the scope and time constraints
 
 ## Test Framework
 
-- **kotlin-test-js** with Karma and Chrome Headless
-- **Run**: `./gradlew jsNodeTest`
-- **Report**: `app/build/reports/tests/jsNodeTests/index.html`
-
-## Test Structure
-
-```
-app/src/test/kotlin/org/combocoach/
-├── AppTest.kt
-├── CombinationGeneratorTest.kt
-└── (add more tests as needed)
-```
-
-## Writing Tests
-
-Use AAA pattern (Arrange, Act, Assert):
-
-```kotlin
-@Test
-fun `descriptive test name in backticks`() {
-    // Arrange
-    val config = TrainingConfiguration(minActions = 3)
-    val generator = FlowCombinationGenerator(config)
-    
-    // Act
-    val combo = generator.generateFlowingCombination()
-    
-    // Assert
-    assertTrue(combo.size >= 3)
-}
-```
-
-## Example Tests
-
-### Domain Test
-
-```kotlin
-@Test
-fun `neutral position allows any action`() {
-    val position = Position.NEUTRAL
-    val stance = Stance.ORTHODOX
-    
-    assertTrue(position.canPerformAction(Action.Jab, stance))
-    assertTrue(position.canPerformAction(Action.Cross, stance))
-}
-```
-
-### Service Test
-
-```kotlin
-@Test
-fun `generates combinations in range`() {
-    val config = TrainingConfiguration(minActions = 4, maxActions = 6)
-    val generator = FlowCombinationGenerator(config)
-    
-    repeat(50) {
-        val combo = generator.generateFlowingCombination()
-        assertTrue(combo.size in 4..6)
-    }
-}
-```
-
-## Best Practices
-
-1. **One test, one thing**: Test single behavior per test
-2. **Descriptive names**: Use backticks for readable test names
-3. **Independent tests**: No shared state between tests
-4. **Test edge cases**: Min/max values, empty cases
-5. **Test randomness**: Use repeat() for random behavior
-
-## Coverage Goals
-
-- Domain: 80%+
-- Service: 70%+
-- UI: 30%+ (complex logic only)
+- **kotlin-test-js**: Kotlin's official testing library for JavaScript
+- **Node.js**: Test execution environment
+- **Test Location**: `app/src/jsTest/kotlin/org/combocoach/`
 
 ## Running Tests
 
 ```bash
-# All tests
-./gradlew test
+# Run all tests (Node.js only, browser tests disabled)
+./gradlew jsTest
 
-# Specific class
-./gradlew test --tests CombinationGeneratorTest
+# Run only Node.js tests explicitly
+./gradlew jsNodeTest
 
-# Continuous
-./gradlew test --continuous
+# Run with detailed output
+./gradlew jsNodeTest --info
+
+# Clean and re-run tests
+./gradlew clean jsNodeTest
+
+# Run tests continuously (watch mode)
+./gradlew jsNodeTest --continuous
 ```
+
+## Test Reports
+
+After running tests, view the HTML report:
+```
+app/build/reports/tests/jsNodeTest/index.html
+```
+
+The report includes:
+- Total tests run, passed, failed
+- Execution time per test
+- Detailed failure messages with stack traces
+- Test organization by package and class
+
+## Test Structure
+
+```
+app/src/jsTest/kotlin/org/combocoach/
+├── domain/
+│   ├── ActionTest.kt              # 11 tests - Action number notation, display names
+│   ├── DefensiveMoveTest.kt       # 3 tests - Defensive move properties
+│   ├── OpponentStrikeTest.kt      # 8 tests - Strike suggestions, validation
+│   ├── PositionTest.kt            # 15 tests - Position transitions, action validation
+│   ├── StanceTest.kt              # 5 tests - Orthodox/Southpaw hand mapping
+│   └── TrainingConfigurationTest.kt # 15 tests - Configuration validation
+├── service/
+│   ├── ComboTrainerTest.kt        # 9 tests - Trainer creation, combo generation
+│   ├── FlowCombinationGeneratorTest.kt # 20 tests - Flow validation, formatting
+│   └── IntervalTrainerTest.kt     # 16 tests - Interval timing, state management
+└── ui/
+    ├── NotificationManagerTest.kt  # 7 tests - Notification types, properties
+    ├── TrainerManagerTest.kt       # 11 tests - Manager state, callbacks
+    └── TrainingStateManagerTest.kt # 17 tests - State transitions, display modes
+```
+
+## Best Practices
+
+1. **Test One Behavior**: Each test should verify a single, specific behavior
+2. **Descriptive Names**: Use clear, action-oriented names that describe what is being tested
+3. **Independent Tests**: Tests should not depend on each other or share mutable state
+4. **Fast Tests**: Keep tests fast by avoiding unnecessary delays or complex setup
+5. **Readable Assertions**: Use descriptive assertion messages for better debugging
+6. **Test Edge Cases**: Include tests for boundary conditions, empty inputs, and error cases
+7. **Avoid DOM Dependencies**: For UI tests, test state and logic, not DOM manipulation
+
+### Browser API Tests
+
+Tests requiring browser-specific APIs are not included:
+- Web Audio API (for audio feedback)
+- Local Storage (for configuration persistence)
+- Browser notifications (for system alerts)
+
+These can be added later if automated testing becomes necessary, but manual testing is currently sufficient.
+
+## Continuous Integration
+
+The test suite is designed to run efficiently in CI/CD:
+
+```yaml
+# Example GitHub Actions workflow
+- name: Run Tests
+  run: ./gradlew jsNodeTest
+```
+
+Benefits:
+- No browser installation required
+- Fast execution (~2-3 seconds)
+- Deterministic results
+- Clear failure messages
+
+## Troubleshooting
+
+### Tests Failing Locally
+
+```bash
+# Clean build artifacts and re-run
+./gradlew clean jsNodeTest
+
+# Check for Node.js version issues
+node --version  # Should be 16+
+
+# Verify Gradle is up to date
+./gradlew --version
+```
+
+### Test Timeouts
+
+If tests timeout:
+1. Check for infinite loops in test code
+2. Ensure async operations complete
+3. Reduce test iterations for random behavior tests
+

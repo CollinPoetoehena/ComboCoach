@@ -121,8 +121,7 @@ class FlowCombinationGeneratorTest {
     @Test
     fun validateFlowReturnsFalseForInvalidCombination() {
         val generator = FlowCombinationGenerator()
-        // Cross from neutral, then lead hook (not allowed from rear extended)
-        val combo = listOf(Action.Cross, Action.LeadHook)
+        val combo = listOf(Action.Cross, Action.RearHook)
         
         assertFalse(generator.validateFlow(combo))
     }

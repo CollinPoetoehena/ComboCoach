@@ -36,8 +36,13 @@ ComboCoach is a **frontend-only** application built with Kotlin/JS. No backend, 
 
 ### Testing
 
-- kotlin-test-js with Karma and Chrome Headless
-- Run tests: `./gradlew test`
+- **kotlin-test-js**: Kotlin's official testing library for JavaScript
+- **Mocha**: Fast, reliable test runner for Node.js
+- **Node.js**: Test execution environment (browser tests disabled)
+- **Run tests**: `./gradlew jsNodeTest`
+- **Philosophy**: Focus on business logic testing with Node.js for speed and simplicity
+
+See [Testing.md](Testing.md) for detailed testing strategy and best practices.
 
 ## Architecture
 
