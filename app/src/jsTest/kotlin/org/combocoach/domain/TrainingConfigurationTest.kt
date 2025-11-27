@@ -9,7 +9,7 @@ import kotlin.test.assertFailsWith
 class TrainingConfigurationTest {
     
     @Test
-    fun `default configuration has sensible values`() {
+    fun defaultConfigurationHasSensibleValues() {
         val config = TrainingConfiguration()
         
         assertEquals(1000, config.actionIntervalMs)
@@ -24,7 +24,7 @@ class TrainingConfigurationTest {
     }
     
     @Test
-    fun `can create custom configuration`() {
+    fun canCreateCustomConfiguration() {
         val config = TrainingConfiguration(
             actionIntervalMs = 2000,
             combinationIntervalMs = 5000,
@@ -49,35 +49,35 @@ class TrainingConfigurationTest {
     }
     
     @Test
-    fun `rejects negative action interval`() {
+    fun rejectsNegativeActionInterval() {
         assertFailsWith<IllegalArgumentException> {
             TrainingConfiguration(actionIntervalMs = -100)
         }
     }
     
     @Test
-    fun `rejects zero action interval`() {
+    fun rejectsZeroActionInterval() {
         assertFailsWith<IllegalArgumentException> {
             TrainingConfiguration(actionIntervalMs = 0)
         }
     }
     
     @Test
-    fun `rejects negative combination interval`() {
+    fun rejectsNegativeCombinationInterval() {
         assertFailsWith<IllegalArgumentException> {
             TrainingConfiguration(combinationIntervalMs = -100)
         }
     }
     
     @Test
-    fun `rejects zero combination interval`() {
+    fun rejectsZeroCombinationInterval() {
         assertFailsWith<IllegalArgumentException> {
             TrainingConfiguration(combinationIntervalMs = 0)
         }
     }
     
     @Test
-    fun `rejects zero or negative min actions`() {
+    fun rejectsZeroOrNegativeMinActions() {
         assertFailsWith<IllegalArgumentException> {
             TrainingConfiguration(minActions = 0)
         }
@@ -87,35 +87,35 @@ class TrainingConfigurationTest {
     }
     
     @Test
-    fun `rejects max actions less than min actions`() {
+    fun rejectsMaxActionsLessThanMinActions() {
         assertFailsWith<IllegalArgumentException> {
             TrainingConfiguration(minActions = 5, maxActions = 3)
         }
     }
     
     @Test
-    fun `allows max actions equal to min actions`() {
+    fun allowsMaxActionsEqualToMinActions() {
         val config = TrainingConfiguration(minActions = 5, maxActions = 5)
         assertEquals(5, config.minActions)
         assertEquals(5, config.maxActions)
     }
     
     @Test
-    fun `rejects offense ratio less than zero`() {
+    fun rejectsOffenseRatioLessThanZero() {
         assertFailsWith<IllegalArgumentException> {
             TrainingConfiguration(offenseRatio = -0.1f)
         }
     }
     
     @Test
-    fun `rejects offense ratio greater than one`() {
+    fun rejectsOffenseRatioGreaterThanOne() {
         assertFailsWith<IllegalArgumentException> {
             TrainingConfiguration(offenseRatio = 1.1f)
         }
     }
     
     @Test
-    fun `allows offense ratio at boundaries`() {
+    fun allowsOffenseRatioAtBoundaries() {
         val config1 = TrainingConfiguration(offenseRatio = 0f)
         assertEquals(0f, config1.offenseRatio)
         
@@ -124,19 +124,19 @@ class TrainingConfigurationTest {
     }
     
     @Test
-    fun `training mode ATTACK_ONLY includes offense`() {
+    fun trainingModeATTACK_ONLYIncludesOffense() {
         assertTrue(TrainingMode.ATTACK_ONLY.includeOffense())
         assertFalse(TrainingMode.ATTACK_ONLY.includeDefense())
     }
     
     @Test
-    fun `training mode DEFENSE_ONLY includes defense`() {
+    fun trainingModeDEFENSE_ONLYIncludesDefense() {
         assertFalse(TrainingMode.DEFENSE_ONLY.includeOffense())
         assertTrue(TrainingMode.DEFENSE_ONLY.includeDefense())
     }
     
     @Test
-    fun `training mode BOTH includes both offense and defense`() {
+    fun trainingModeBOTHIncludesBothOffenseAndDefense() {
         assertTrue(TrainingMode.BOTH.includeOffense())
         assertTrue(TrainingMode.BOTH.includeDefense())
     }

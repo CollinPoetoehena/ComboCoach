@@ -10,7 +10,7 @@ import kotlin.test.assertNotNull
 class TrainingStateManagerTest {
     
     @Test
-    fun `starts in IDLE state`() {
+    fun startsInIDLEState() {
         val manager = TrainingStateManager()
         
         assertEquals(TrainingStateManager.State.IDLE, manager.getState())
@@ -20,14 +20,14 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `starts in WELCOME display mode`() {
+    fun startsInWELCOMEDisplayMode() {
         val manager = TrainingStateManager()
         
         assertEquals(TrainingStateManager.DisplayMode.WELCOME, manager.getDisplayMode())
     }
     
     @Test
-    fun `setState changes state`() {
+    fun setStateChangesState() {
         val manager = TrainingStateManager()
         
         manager.setState(TrainingStateManager.State.RUNNING)
@@ -44,7 +44,7 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `setDisplayMode changes display mode`() {
+    fun setDisplayModeChangesDisplayMode() {
         val manager = TrainingStateManager()
         
         manager.setDisplayMode(TrainingStateManager.DisplayMode.CONFIGURATION)
@@ -61,7 +61,7 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `isIdle returns true only when state is IDLE`() {
+    fun isIdleReturnsTrueOnlyWhenStateIsIDLE() {
         val manager = TrainingStateManager()
         
         manager.setState(TrainingStateManager.State.IDLE)
@@ -75,7 +75,7 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `isRunning returns true only when state is RUNNING`() {
+    fun isRunningReturnsTrueOnlyWhenStateIsRUNNING() {
         val manager = TrainingStateManager()
         
         manager.setState(TrainingStateManager.State.RUNNING)
@@ -89,7 +89,7 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `isPaused returns true only when state is PAUSED`() {
+    fun isPausedReturnsTrueOnlyWhenStateIsPAUSED() {
         val manager = TrainingStateManager()
         
         manager.setState(TrainingStateManager.State.PAUSED)
@@ -103,7 +103,7 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `storeModeBeforeInfo stores current display mode`() {
+    fun storeModeBeforeInfoStoresCurrentDisplayMode() {
         val manager = TrainingStateManager()
         
         manager.setDisplayMode(TrainingStateManager.DisplayMode.TRAINING)
@@ -113,7 +113,7 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `storeModeBeforeInfo only stores first call`() {
+    fun storeModeBeforeInfoOnlyStoresFirstCall() {
         val manager = TrainingStateManager()
         
         manager.setDisplayMode(TrainingStateManager.DisplayMode.TRAINING)
@@ -126,7 +126,7 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `clearModeBeforeInfo clears stored mode`() {
+    fun clearModeBeforeInfoClearsStoredMode() {
         val manager = TrainingStateManager()
         
         manager.setDisplayMode(TrainingStateManager.DisplayMode.TRAINING)
@@ -138,14 +138,14 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `getModeBeforeInfo returns null initially`() {
+    fun getModeBeforeInfoReturnsNullInitially() {
         val manager = TrainingStateManager()
         
         assertNull(manager.getModeBeforeInfo())
     }
     
     @Test
-    fun `setRestoreCallback stores callback`() {
+    fun setRestoreCallbackStoresCallback() {
         val manager = TrainingStateManager()
         var callbackCalled = false
         val callback = { callbackCalled = true }
@@ -158,7 +158,7 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `clearRestoreCallback clears callback`() {
+    fun clearRestoreCallbackClearsCallback() {
         val manager = TrainingStateManager()
         val callback = { }
         
@@ -170,14 +170,14 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `getRestoreCallback returns null initially`() {
+    fun getRestoreCallbackReturnsNullInitially() {
         val manager = TrainingStateManager()
         
         assertNull(manager.getRestoreCallback())
     }
     
     @Test
-    fun `reset restores initial state`() {
+    fun resetRestoresInitialState() {
         val manager = TrainingStateManager()
         
         // Change everything
@@ -197,7 +197,7 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `multiple state transitions work correctly`() {
+    fun multipleStateTransitionsWorkCorrectly() {
         val manager = TrainingStateManager()
         
         manager.setState(TrainingStateManager.State.RUNNING)
@@ -214,7 +214,7 @@ class TrainingStateManagerTest {
     }
     
     @Test
-    fun `all display modes are accessible`() {
+    fun allDisplayModesAreAccessible() {
         val manager = TrainingStateManager()
         
         val modes = listOf(

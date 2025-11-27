@@ -10,7 +10,7 @@ import kotlin.test.assertNotNull
 class TrainerManagerTest {
     
     @Test
-    fun `creates with default configuration`() {
+    fun createsWithDefaultConfiguration() {
         val manager = TrainerManager()
         
         assertNotNull(manager.getConfig())
@@ -18,7 +18,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `getConfig returns current configuration`() {
+    fun getConfigReturnsCurrentConfiguration() {
         val manager = TrainerManager()
         
         val config = manager.getConfig()
@@ -29,7 +29,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `updateConfiguration updates configuration`() {
+    fun updateConfigurationUpdatesConfiguration() {
         val manager = TrainerManager()
         val newConfig = TrainingConfiguration(
             minActions = 5,
@@ -43,7 +43,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `generatePreview returns combination and formatted string`() {
+    fun generatePreviewReturnsCombinationAndFormattedString() {
         val manager = TrainerManager()
         
         val (combo, formatted) = manager.generatePreview()
@@ -53,7 +53,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `generatePreview respects configuration`() {
+    fun generatePreviewRespectsConfiguration() {
         val manager = TrainerManager()
         val config = TrainingConfiguration(
             minActions = 5,
@@ -69,7 +69,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `generatePreview with number notation formats correctly`() {
+    fun generatePreviewWithNumberNotationFormatsCorrectly() {
         val manager = TrainerManager()
         val config = TrainingConfiguration(
             useNumberNotation = true,
@@ -86,7 +86,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `training starts as inactive`() {
+    fun trainingStartsAsInactive() {
         val manager = TrainerManager()
         
         assertFalse(manager.isTrainingActive())
@@ -94,7 +94,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `stopTraining sets training to inactive`() {
+    fun stopTrainingSetsTrainingToInactive() {
         val manager = TrainerManager()
         
         manager.stopTraining()
@@ -103,14 +103,14 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `getCompletedCombos returns zero initially`() {
+    fun getCompletedCombosReturnsZeroInitially() {
         val manager = TrainerManager()
         
         assertEquals(0, manager.getCompletedCombos())
     }
     
     @Test
-    fun `getCurrentCombination returns empty list initially`() {
+    fun getCurrentCombinationReturnsEmptyListInitially() {
         val manager = TrainerManager()
         
         val combo = manager.getCurrentCombination()
@@ -119,7 +119,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `getProgress returns zero initially`() {
+    fun getProgressReturnsZeroInitially() {
         val manager = TrainerManager()
         
         val progress = manager.getProgress()
@@ -128,7 +128,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `getCurrentDisplayedActions returns empty list initially`() {
+    fun getCurrentDisplayedActionsReturnsEmptyListInitially() {
         val manager = TrainerManager()
         
         val actions = manager.getCurrentDisplayedActions()
@@ -137,7 +137,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `callbacks can be set`() {
+    fun callbacksCanBeSet() {
         val manager = TrainerManager()
         var actionCalled = false
         var combinationCalled = false
@@ -153,7 +153,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `updateConfiguration with different training modes`() {
+    fun updateConfigurationWithDifferentTrainingModes() {
         val manager = TrainerManager()
         
         // Test ATTACK_ONLY
@@ -176,7 +176,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `updateConfiguration with different stances`() {
+    fun updateConfigurationWithDifferentStances() {
         val manager = TrainerManager()
         
         manager.updateConfiguration(TrainingConfiguration(stance = Stance.ORTHODOX))
@@ -187,7 +187,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `updateConfiguration with different intervals`() {
+    fun updateConfigurationWithDifferentIntervals() {
         val manager = TrainerManager()
         
         manager.updateConfiguration(TrainingConfiguration(
@@ -200,7 +200,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `multiple preview generations produce different results`() {
+    fun multiplePreviewGenerationsProduceDifferentResults() {
         val manager = TrainerManager()
         manager.updateConfiguration(TrainingConfiguration(minActions = 5, maxActions = 8))
         
@@ -212,7 +212,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `configuration with min and max actions`() {
+    fun configurationWithMinAndMaxActions() {
         val manager = TrainerManager()
         
         manager.updateConfiguration(TrainingConfiguration(
@@ -229,7 +229,7 @@ class TrainerManagerTest {
     }
     
     @Test
-    fun `stopTraining can be called multiple times`() {
+    fun stopTrainingCanBeCalledMultipleTimes() {
         val manager = TrainerManager()
         
         manager.stopTraining()

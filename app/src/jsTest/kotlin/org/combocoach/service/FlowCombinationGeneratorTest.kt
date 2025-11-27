@@ -9,7 +9,7 @@ import kotlin.test.assertFalse
 class FlowCombinationGeneratorTest {
     
     @Test
-    fun `generates combination with correct number of actions`() {
+    fun generatesCombinationWithCorrectNumberOfActions() {
         val config = TrainingConfiguration(minActions = 5, maxActions = 5)
         val generator = FlowCombinationGenerator(config)
         
@@ -19,7 +19,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `generates combination within min and max range`() {
+    fun generatesCombinationWithinMinAndMaxRange() {
         val config = TrainingConfiguration(minActions = 3, maxActions = 8)
         val generator = FlowCombinationGenerator(config)
         
@@ -32,7 +32,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `ATTACK_ONLY mode generates only offensive actions`() {
+    fun ATTACK_ONLYModeGeneratesOnlyOffensiveActions() {
         val config = TrainingConfiguration(
             trainingMode = TrainingMode.ATTACK_ONLY,
             minActions = 5,
@@ -48,7 +48,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `DEFENSE_ONLY mode generates only defensive actions`() {
+    fun DEFENSE_ONLYModeGeneratesOnlyDefensiveActions() {
         val config = TrainingConfiguration(
             trainingMode = TrainingMode.DEFENSE_ONLY,
             minActions = 5,
@@ -64,7 +64,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `BOTH mode generates mix of offensive and defensive actions`() {
+    fun BOTHModeGeneratesMixOfOffensiveAndDefensiveActions() {
         val config = TrainingConfiguration(
             trainingMode = TrainingMode.BOTH,
             offenseRatio = 0.5f,
@@ -83,7 +83,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `generated combination flows properly`() {
+    fun generatedCombinationFlowsProperly() {
         val config = TrainingConfiguration(minActions = 10, maxActions = 10)
         val generator = FlowCombinationGenerator(config)
         
@@ -95,7 +95,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `validateFlow returns true for valid jab combination`() {
+    fun validateFlowReturnsTrueForValidJabCombination() {
         val generator = FlowCombinationGenerator()
         val combo = listOf(Action.Jab, Action.Jab, Action.Jab)
         
@@ -103,7 +103,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `validateFlow returns true for valid jab-cross combination`() {
+    fun validateFlowReturnsTrueForValidJabCrossCombination() {
         val generator = FlowCombinationGenerator()
         val combo = listOf(Action.Jab, Action.Cross)
         
@@ -111,7 +111,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `validateFlow returns true for valid jab-cross-hook combination`() {
+    fun validateFlowReturnsTrueForValidJabCrossHookCombination() {
         val generator = FlowCombinationGenerator()
         val combo = listOf(Action.Jab, Action.Cross, Action.LeadHook)
         
@@ -119,7 +119,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `validateFlow returns false for invalid combination`() {
+    fun validateFlowReturnsFalseForInvalidCombination() {
         val generator = FlowCombinationGenerator()
         // Cross from neutral, then lead hook (not allowed from rear extended)
         val combo = listOf(Action.Cross, Action.LeadHook)
@@ -128,7 +128,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `validateFlow returns true when defense resets to neutral`() {
+    fun validateFlowReturnsTrueWhenDefenseResetsToNeutral() {
         val generator = FlowCombinationGenerator()
         val defense = Action.DefendOpponentAttack(OpponentStrike.OPPONENT_JAB)
         // Cross -> Defense -> Lead Hook should work because defense resets to neutral
@@ -138,7 +138,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `formatActions with number notation shows numbers`() {
+    fun formatActionsWithNumberNotationShowsNumbers() {
         val config = TrainingConfiguration(useNumberNotation = true)
         val generator = FlowCombinationGenerator(config)
         val combo = listOf(Action.Jab, Action.Cross, Action.LeadHook)
@@ -149,7 +149,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `formatActions without number notation shows full names`() {
+    fun formatActionsWithoutNumberNotationShowsFullNames() {
         val config = TrainingConfiguration(useNumberNotation = false)
         val generator = FlowCombinationGenerator(config)
         val combo = listOf(Action.Jab, Action.Cross, Action.LeadHook)
@@ -160,7 +160,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `formatActions with defensive actions uses correct notation`() {
+    fun formatActionsWithDefensiveActionsUsesCorrectNotation() {
         val config = TrainingConfiguration(useNumberNotation = true)
         val generator = FlowCombinationGenerator(config)
         val defense = Action.DefendOpponentAttack(OpponentStrike.OPPONENT_JAB)
@@ -172,7 +172,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `generateNextAction returns valid action from neutral position`() {
+    fun generateNextActionReturnsValidActionFromNeutralPosition() {
         val generator = FlowCombinationGenerator()
         
         repeat(20) {
@@ -182,7 +182,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `generateNextAction returns valid action from lead extended position`() {
+    fun generateNextActionReturnsValidActionFromLeadExtendedPosition() {
         val generator = FlowCombinationGenerator()
         
         repeat(20) {
@@ -192,7 +192,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `generateNextAction returns valid action from rear extended position`() {
+    fun generateNextActionReturnsValidActionFromRearExtendedPosition() {
         val generator = FlowCombinationGenerator()
         
         repeat(20) {
@@ -202,7 +202,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `configuration with southpaw stance works correctly`() {
+    fun configurationWithSouthpawStanceWorksCorrectly() {
         val config = TrainingConfiguration(
             stance = Stance.SOUTHPAW,
             minActions = 5,
@@ -217,7 +217,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `high offense ratio generates mostly offensive actions`() {
+    fun highOffenseRatioGeneratesMostlyOffensiveActions() {
         val config = TrainingConfiguration(
             trainingMode = TrainingMode.BOTH,
             offenseRatio = 0.9f,
@@ -235,7 +235,7 @@ class FlowCombinationGeneratorTest {
     }
     
     @Test
-    fun `low offense ratio generates mostly defensive actions`() {
+    fun lowOffenseRatioGeneratesMostlyDefensiveActions() {
         val config = TrainingConfiguration(
             trainingMode = TrainingMode.BOTH,
             offenseRatio = 0.1f,

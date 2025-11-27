@@ -11,7 +11,7 @@ class PositionTest {
     private val southpawStance = Stance.SOUTHPAW
     
     @Test
-    fun `neutral position allows all offensive actions`() {
+    fun neutralPositionAllowsAllOffensiveActions() {
         val position = Position.NEUTRAL
         
         assertTrue(position.canPerformAction(Action.Jab, orthodoxStance))
@@ -23,7 +23,7 @@ class PositionTest {
     }
     
     @Test
-    fun `neutral position allows all defensive actions`() {
+    fun neutralPositionAllowsAllDefensiveActions() {
         val position = Position.NEUTRAL
         
         assertTrue(position.canPerformAction(
@@ -37,14 +37,14 @@ class PositionTest {
     }
     
     @Test
-    fun `jab can be thrown from any position`() {
+    fun jabCanBeThrownFromAnyPosition() {
         assertTrue(Position.NEUTRAL.canPerformAction(Action.Jab, orthodoxStance))
         assertTrue(Position.LEAD_EXTENDED.canPerformAction(Action.Jab, orthodoxStance))
         assertTrue(Position.REAR_EXTENDED.canPerformAction(Action.Jab, orthodoxStance))
     }
     
     @Test
-    fun `defense can be performed from any position`() {
+    fun defenseCanBePerformedFromAnyPosition() {
         val defense = Action.DefendOpponentAttack(OpponentStrike.OPPONENT_JAB)
         
         assertTrue(Position.NEUTRAL.canPerformAction(defense, orthodoxStance))
@@ -53,67 +53,67 @@ class PositionTest {
     }
     
     @Test
-    fun `cross allowed from neutral and lead extended`() {
+    fun crossAllowedFromNeutralAndLeadExtended() {
         assertTrue(Position.NEUTRAL.canPerformAction(Action.Cross, orthodoxStance))
         assertTrue(Position.LEAD_EXTENDED.canPerformAction(Action.Cross, orthodoxStance))
         assertFalse(Position.REAR_EXTENDED.canPerformAction(Action.Cross, orthodoxStance))
     }
     
     @Test
-    fun `lead hook allowed from neutral and rear extended`() {
+    fun leadHookAllowedFromNeutralAndRearExtended() {
         assertTrue(Position.NEUTRAL.canPerformAction(Action.LeadHook, orthodoxStance))
         assertTrue(Position.REAR_EXTENDED.canPerformAction(Action.LeadHook, orthodoxStance))
         assertFalse(Position.LEAD_EXTENDED.canPerformAction(Action.LeadHook, orthodoxStance))
     }
     
     @Test
-    fun `rear hook allowed from neutral and lead extended`() {
+    fun rearHookAllowedFromNeutralAndLeadExtended() {
         assertTrue(Position.NEUTRAL.canPerformAction(Action.RearHook, orthodoxStance))
         assertTrue(Position.LEAD_EXTENDED.canPerformAction(Action.RearHook, orthodoxStance))
         assertFalse(Position.REAR_EXTENDED.canPerformAction(Action.RearHook, orthodoxStance))
     }
     
     @Test
-    fun `lead uppercut allowed from neutral and rear extended`() {
+    fun leadUppercutAllowedFromNeutralAndRearExtended() {
         assertTrue(Position.NEUTRAL.canPerformAction(Action.LeadUppercut, orthodoxStance))
         assertTrue(Position.REAR_EXTENDED.canPerformAction(Action.LeadUppercut, orthodoxStance))
         assertFalse(Position.LEAD_EXTENDED.canPerformAction(Action.LeadUppercut, orthodoxStance))
     }
     
     @Test
-    fun `rear uppercut allowed from neutral and lead extended`() {
+    fun rearUppercutAllowedFromNeutralAndLeadExtended() {
         assertTrue(Position.NEUTRAL.canPerformAction(Action.RearUppercut, orthodoxStance))
         assertTrue(Position.LEAD_EXTENDED.canPerformAction(Action.RearUppercut, orthodoxStance))
         assertFalse(Position.REAR_EXTENDED.canPerformAction(Action.RearUppercut, orthodoxStance))
     }
     
     @Test
-    fun `jab transitions to lead extended`() {
+    fun jabTransitionsToLeadExtended() {
         assertEquals(Position.LEAD_EXTENDED, Position.NEUTRAL.after(Action.Jab, orthodoxStance))
         assertEquals(Position.LEAD_EXTENDED, Position.LEAD_EXTENDED.after(Action.Jab, orthodoxStance))
         assertEquals(Position.LEAD_EXTENDED, Position.REAR_EXTENDED.after(Action.Jab, orthodoxStance))
     }
     
     @Test
-    fun `cross transitions to rear extended`() {
+    fun crossTransitionsToRearExtended() {
         assertEquals(Position.REAR_EXTENDED, Position.NEUTRAL.after(Action.Cross, orthodoxStance))
         assertEquals(Position.REAR_EXTENDED, Position.LEAD_EXTENDED.after(Action.Cross, orthodoxStance))
     }
     
     @Test
-    fun `lead hand actions transition to lead extended`() {
+    fun leadHandActionsTransitionToLeadExtended() {
         assertEquals(Position.LEAD_EXTENDED, Position.NEUTRAL.after(Action.LeadHook, orthodoxStance))
         assertEquals(Position.LEAD_EXTENDED, Position.NEUTRAL.after(Action.LeadUppercut, orthodoxStance))
     }
     
     @Test
-    fun `rear hand actions transition to rear extended`() {
+    fun rearHandActionsTransitionToRearExtended() {
         assertEquals(Position.REAR_EXTENDED, Position.NEUTRAL.after(Action.RearHook, orthodoxStance))
         assertEquals(Position.REAR_EXTENDED, Position.NEUTRAL.after(Action.RearUppercut, orthodoxStance))
     }
     
     @Test
-    fun `defense transitions back to neutral`() {
+    fun defenseTransitionsBackToNeutral() {
         val defense = Action.DefendOpponentAttack(OpponentStrike.OPPONENT_JAB)
         
         assertEquals(Position.NEUTRAL, Position.LEAD_EXTENDED.after(defense, orthodoxStance))
@@ -122,7 +122,7 @@ class PositionTest {
     }
     
     @Test
-    fun `position logic works for southpaw stance`() {
+    fun positionLogicWorksForSouthpawStance() {
         // Basic tests to ensure stance parameter is accepted
         assertTrue(Position.NEUTRAL.canPerformAction(Action.Jab, southpawStance))
         assertTrue(Position.LEAD_EXTENDED.canPerformAction(Action.Cross, southpawStance))

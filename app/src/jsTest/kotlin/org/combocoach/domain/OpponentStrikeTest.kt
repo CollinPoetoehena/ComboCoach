@@ -7,7 +7,7 @@ import kotlin.test.assertTrue
 class OpponentStrikeTest {
     
     @Test
-    fun `opponent strikes have correct display names`() {
+    fun opponentStrikesHaveCorrectDisplayNames() {
         assertEquals("Opponent Jab", OpponentStrike.OPPONENT_JAB.displayName)
         assertEquals("Opponent Cross", OpponentStrike.OPPONENT_CROSS.displayName)
         assertEquals("Opponent Hook", OpponentStrike.OPPONENT_HOOK.displayName)
@@ -15,13 +15,13 @@ class OpponentStrikeTest {
     }
     
     @Test
-    fun `opponent strike toString returns display name`() {
+    fun opponentStrikeToStringReturnsDisplayName() {
         assertEquals("Opponent Jab", OpponentStrike.OPPONENT_JAB.toString())
         assertEquals("Opponent Hook", OpponentStrike.OPPONENT_HOOK.toString())
     }
     
     @Test
-    fun `opponent jab has appropriate defensive suggestions`() {
+    fun opponentJabHasAppropriateDefensiveSuggestions() {
         val defenses = OpponentStrike.OPPONENT_JAB.suggestedDefense
         assertTrue(defenses.contains(DefensiveMove.SLIP_LEFT))
         assertTrue(defenses.contains(DefensiveMove.SLIP_RIGHT))
@@ -29,7 +29,7 @@ class OpponentStrikeTest {
     }
     
     @Test
-    fun `opponent cross has appropriate defensive suggestions`() {
+    fun opponentCrossHasAppropriateDefensiveSuggestions() {
         val defenses = OpponentStrike.OPPONENT_CROSS.suggestedDefense
         assertTrue(defenses.contains(DefensiveMove.SLIP_LEFT))
         assertTrue(defenses.contains(DefensiveMove.SLIP_RIGHT))
@@ -37,7 +37,7 @@ class OpponentStrikeTest {
     }
     
     @Test
-    fun `opponent hook has appropriate defensive suggestions`() {
+    fun opponentHookHasAppropriateDefensiveSuggestions() {
         val defenses = OpponentStrike.OPPONENT_HOOK.suggestedDefense
         assertTrue(defenses.contains(DefensiveMove.DUCK))
         assertTrue(defenses.contains(DefensiveMove.BLOCK))
@@ -45,14 +45,14 @@ class OpponentStrikeTest {
     }
     
     @Test
-    fun `opponent uppercut has appropriate defensive suggestions`() {
+    fun opponentUppercutHasAppropriateDefensiveSuggestions() {
         val defenses = OpponentStrike.OPPONENT_UPPERCUT.suggestedDefense
         assertTrue(defenses.contains(DefensiveMove.BLOCK))
         assertTrue(defenses.contains(DefensiveMove.DUCK))
     }
     
     @Test
-    fun `all opponent strikes have at least one suggested defense`() {
+    fun allOpponentStrikesHaveAtLeastOneSuggestedDefense() {
         OpponentStrike.entries.forEach { strike ->
             assertTrue(strike.suggestedDefense.isNotEmpty(), 
                 "${strike.displayName} should have at least one suggested defense")
@@ -60,7 +60,7 @@ class OpponentStrikeTest {
     }
     
     @Test
-    fun `all opponent strikes are accessible`() {
+    fun allOpponentStrikesAreAccessible() {
         val allStrikes = OpponentStrike.entries
         assertEquals(4, allStrikes.size)
     }

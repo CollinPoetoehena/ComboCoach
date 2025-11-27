@@ -9,7 +9,7 @@ import kotlin.test.assertNotNull
 class ComboTrainerTest {
     
     @Test
-    fun `creates trainer with default configuration`() {
+    fun createsTrainerWithDefaultConfiguration() {
         val trainer = ComboTrainer()
         
         assertNotNull(trainer.config)
@@ -17,7 +17,7 @@ class ComboTrainerTest {
     }
     
     @Test
-    fun `creates trainer with custom configuration`() {
+    fun createsTrainerWithCustomConfiguration() {
         val config = TrainingConfiguration(
             minActions = 5,
             maxActions = 10,
@@ -29,7 +29,7 @@ class ComboTrainerTest {
     }
     
     @Test
-    fun `generateFlowingCombo returns valid combination`() {
+    fun generateFlowingComboReturnsValidCombination() {
         val trainer = ComboTrainer(TrainingConfiguration(minActions = 3, maxActions = 8))
         
         val combo = trainer.generateFlowingCombo()
@@ -39,7 +39,7 @@ class ComboTrainerTest {
     }
     
     @Test
-    fun `generateFlowingCombo respects training mode`() {
+    fun generateFlowingComboRespectsTrainingMode() {
         val trainer = ComboTrainer(TrainingConfiguration(
             trainingMode = TrainingMode.ATTACK_ONLY,
             minActions = 5,
@@ -52,7 +52,7 @@ class ComboTrainerTest {
     }
     
     @Test
-    fun `formatCombination formats actions correctly`() {
+    fun formatCombinationFormatsActionsCorrectly() {
         val trainer = ComboTrainer(TrainingConfiguration(useNumberNotation = true))
         val combo = listOf(Action.Jab, Action.Cross, Action.LeadHook)
         
@@ -62,7 +62,7 @@ class ComboTrainerTest {
     }
     
     @Test
-    fun `updateConfiguration changes trainer configuration`() {
+    fun updateConfigurationChangesTrainerConfiguration() {
         val trainer = ComboTrainer()
         val newConfig = TrainingConfiguration(
             minActions = 10,
@@ -76,7 +76,7 @@ class ComboTrainerTest {
     }
     
     @Test
-    fun `updateConfiguration affects generated combinations`() {
+    fun updateConfigurationAffectsGeneratedCombinations() {
         val trainer = ComboTrainer(TrainingConfiguration(
             trainingMode = TrainingMode.ATTACK_ONLY,
             minActions = 3,
@@ -99,7 +99,7 @@ class ComboTrainerTest {
     }
     
     @Test
-    fun `getIntervalTrainer returns interval trainer`() {
+    fun getIntervalTrainerReturnsIntervalTrainer() {
         val trainer = ComboTrainer()
         
         val intervalTrainer = trainer.getIntervalTrainer()
@@ -108,7 +108,7 @@ class ComboTrainerTest {
     }
     
     @Test
-    fun `multiple combo generations produce different results`() {
+    fun multipleComboGenerationsProduceDifferentResults() {
         val trainer = ComboTrainer(TrainingConfiguration(minActions = 5, maxActions = 8))
         
         val combos = List(10) { trainer.generateFlowingCombo() }

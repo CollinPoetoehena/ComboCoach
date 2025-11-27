@@ -6,7 +6,7 @@ import kotlin.test.assertEquals
 class DefensiveMoveTest {
     
     @Test
-    fun `defensive moves have correct display names`() {
+    fun defensiveMovesHaveCorrectDisplayNames() {
         assertEquals("Slip Left", DefensiveMove.SLIP_LEFT.displayName)
         assertEquals("Slip Right", DefensiveMove.SLIP_RIGHT.displayName)
         assertEquals("Roll Left", DefensiveMove.ROLL_LEFT.displayName)
@@ -17,14 +17,14 @@ class DefensiveMoveTest {
     }
     
     @Test
-    fun `defensive move toString returns display name`() {
+    fun defensiveMoveToStringReturnsDisplayName() {
         assertEquals("Slip Left", DefensiveMove.SLIP_LEFT.toString())
         assertEquals("Duck", DefensiveMove.DUCK.toString())
         assertEquals("Block", DefensiveMove.BLOCK.toString())
     }
     
     @Test
-    fun `all defensive moves are accessible`() {
+    fun allDefensiveMovesAreAccessible() {
         val allMoves = DefensiveMove.entries
         assertEquals(7, allMoves.size)
     }

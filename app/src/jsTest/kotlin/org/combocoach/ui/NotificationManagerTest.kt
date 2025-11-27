@@ -11,7 +11,7 @@ import kotlin.test.assertEquals
 class NotificationManagerTest {
     
     @Test
-    fun `SUCCESS notification type has correct properties`() {
+    fun SUCCESSNotificationTypeHasCorrectProperties() {
         val type = NotificationManager.NotificationType.SUCCESS
         
         assertEquals("#4CAF50", type.backgroundColor)
@@ -19,7 +19,7 @@ class NotificationManagerTest {
     }
     
     @Test
-    fun `ERROR notification type has correct properties`() {
+    fun ERRORNotificationTypeHasCorrectProperties() {
         val type = NotificationManager.NotificationType.ERROR
         
         assertEquals("#f44336", type.backgroundColor)
@@ -27,7 +27,7 @@ class NotificationManagerTest {
     }
     
     @Test
-    fun `INFO notification type has correct properties`() {
+    fun INFONotificationTypeHasCorrectProperties() {
         val type = NotificationManager.NotificationType.INFO
         
         assertEquals("#2196F3", type.backgroundColor)
@@ -35,7 +35,7 @@ class NotificationManagerTest {
     }
     
     @Test
-    fun `WARNING notification type has correct properties`() {
+    fun WARNINGNotificationTypeHasCorrectProperties() {
         val type = NotificationManager.NotificationType.WARNING
         
         assertEquals("#ff9800", type.backgroundColor)
@@ -43,21 +43,21 @@ class NotificationManagerTest {
     }
     
     @Test
-    fun `all notification types have unique background colors`() {
+    fun allNotificationTypesHaveUniqueBackgroundColors() {
         val colors = NotificationManager.NotificationType.entries.map { it.backgroundColor }.toSet()
         
         assertEquals(4, colors.size, "All notification types should have unique colors")
     }
     
     @Test
-    fun `all notification types have unique icons`() {
+    fun allNotificationTypesHaveUniqueIcons() {
         val icons = NotificationManager.NotificationType.entries.map { it.icon }.toSet()
         
         assertEquals(4, icons.size, "All notification types should have unique icons")
     }
     
     @Test
-    fun `all notification types are accessible`() {
+    fun allNotificationTypesAreAccessible() {
         val types = NotificationManager.NotificationType.entries
         
         assertEquals(4, types.size)

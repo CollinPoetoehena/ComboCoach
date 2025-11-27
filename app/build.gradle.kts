@@ -16,12 +16,8 @@ kotlin {
             commonWebpackConfig {
                 outputFileName = "combocoach.js"
             }
-            testTask {
-                useKarma {
-                    useChromeHeadless()
-                }
-            }
         }
+        nodejs()
         binaries.executable()
     }
     

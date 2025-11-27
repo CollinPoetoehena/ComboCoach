@@ -14,14 +14,14 @@ import kotlin.test.assertNotNull
 class IntervalTrainerTest {
     
     @Test
-    fun `creates trainer with default configuration`() {
+    fun createsTrainerWithDefaultConfiguration() {
         val trainer = IntervalTrainer()
         
         assertNotNull(trainer)
     }
     
     @Test
-    fun `creates trainer with custom configuration`() {
+    fun createsTrainerWithCustomConfiguration() {
         val config = TrainingConfiguration(
             minActions = 5,
             maxActions = 10,
@@ -33,7 +33,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `trainer starts as inactive`() {
+    fun trainerStartsAsInactive() {
         val trainer = IntervalTrainer()
         
         assertFalse(trainer.isActive())
@@ -41,14 +41,14 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `trainer starts as not paused`() {
+    fun trainerStartsAsNotPaused() {
         val trainer = IntervalTrainer()
         
         assertFalse(trainer.isPaused())
     }
     
     @Test
-    fun `getCurrentCombination returns empty list initially`() {
+    fun getCurrentCombinationReturnsEmptyListInitially() {
         val trainer = IntervalTrainer()
         
         val combo = trainer.getCurrentCombination()
@@ -57,7 +57,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `getProgress returns zero initially`() {
+    fun getProgressReturnsZeroInitially() {
         val trainer = IntervalTrainer()
         
         val progress = trainer.getProgress()
@@ -66,7 +66,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `getTotalCombinationsCompleted returns zero initially`() {
+    fun getTotalCombinationsCompletedReturnsZeroInitially() {
         val trainer = IntervalTrainer()
         
         val total = trainer.getTotalCombinationsCompleted()
@@ -75,7 +75,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `stop sets trainer to inactive`() {
+    fun stopSetsTrainerToInactive() {
         val trainer = IntervalTrainer()
         
         trainer.stop()
@@ -84,7 +84,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `stop clears current combination`() {
+    fun stopClearsCurrentCombination() {
         val trainer = IntervalTrainer()
         
         trainer.stop()
@@ -93,7 +93,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `multiple stops don't cause errors`() {
+    fun multipleStopsDontCauseErrors() {
         val trainer = IntervalTrainer()
         
         trainer.stop()
@@ -104,7 +104,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `callbacks can be set`() {
+    fun callbacksCanBeSet() {
         val trainer = IntervalTrainer()
         var actionCallbackCalled = false
         var combinationCallbackCalled = false
@@ -120,7 +120,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `trainer with ATTACK_ONLY mode configuration`() {
+    fun trainerWithATTACK_ONLYModeConfiguration() {
         val config = TrainingConfiguration(
             trainingMode = TrainingMode.ATTACK_ONLY,
             minActions = 5,
@@ -133,7 +133,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `trainer with DEFENSE_ONLY mode configuration`() {
+    fun trainerWithDEFENSE_ONLYModeConfiguration() {
         val config = TrainingConfiguration(
             trainingMode = TrainingMode.DEFENSE_ONLY,
             minActions = 5,
@@ -146,7 +146,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `trainer with BOTH mode configuration`() {
+    fun trainerWithBOTHModeConfiguration() {
         val config = TrainingConfiguration(
             trainingMode = TrainingMode.BOTH,
             minActions = 5,
@@ -159,7 +159,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `trainer with southpaw stance configuration`() {
+    fun trainerWithSouthpawStanceConfiguration() {
         val config = TrainingConfiguration(stance = Stance.SOUTHPAW)
         val trainer = IntervalTrainer(config)
         
@@ -167,7 +167,7 @@ class IntervalTrainerTest {
     }
     
     @Test
-    fun `trainer accepts various interval configurations`() {
+    fun trainerAcceptsVariousIntervalConfigurations() {
         val config1 = TrainingConfiguration(
             actionIntervalMs = 500,
             combinationIntervalMs = 1000

@@ -6,8 +6,8 @@ TODO: extend this a bit and use the latest version of the code/setup for this in
 ## Test Framework
 
 - **kotlin-test-js** with Karma and Chrome Headless
-- **Run**: `./gradlew test`
-- **Report**: `app/build/reports/tests/test/index.html`
+- **Run**: `./gradlew jsNodeTest`
+- **Report**: `app/build/reports/tests/jsNodeTests/index.html`
 
 ## Test Structure
 
