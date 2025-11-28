@@ -34,9 +34,14 @@ class TrainerManager {
      * Update configuration and reinitialize trainer
      */
     fun updateConfiguration(newConfig: TrainingConfiguration) {
+        console.log("Updating configuration: $newConfig")
         config = newConfig
         trainer.updateConfiguration(config)
         setupCallbacks()
+        
+        // Auto-adjust speech rate based on action interval
+        SoundManager.autoAdjustRateForInterval(config.actionIntervalMs)
+        
         NotificationManager.success("Configuration applied!")
     }
     
@@ -45,6 +50,10 @@ class TrainerManager {
      */
     fun startTraining() {
         currentDisplayedActions.clear()
+        
+        // Auto-adjust speech rate based on current action interval
+        SoundManager.autoAdjustRateForInterval(config.actionIntervalMs)
+        
         trainer.startIntervalTraining()
     }
     
@@ -102,6 +111,9 @@ class TrainerManager {
         intervalTrainer.onActionDisplay = { action, index, total, _ ->
             currentDisplayedActions.add(action)
             onActionDisplay?.invoke(action, index, total)
+            
+            // Speak the action number/name
+            SoundManager.speakAction(action)
         }
         
         intervalTrainer.onCombinationComplete = { comboNumber ->

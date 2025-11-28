@@ -142,6 +142,7 @@ object DisplayAreaComponent {
         contentArea?.appendChild(ConfigFormMolecule.create(config))
         
         ConfigFormMolecule.setupModeSelectListener()
+        ConfigFormMolecule.setupSoundControls()
         
         document.getElementById("apply-config-btn")?.addEventListener("click", {
             onApply()

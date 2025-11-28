@@ -12,6 +12,7 @@ Web-based boxing trainer that generates realistic combinations respecting natura
 - **Interval Training**: Customizable timing between actions
 - **Stance Support**: Orthodox and Southpaw
 - **Standard Boxing Notation**: 1-6 for strikes, D1-D4 for defense
+- **Browser Support**: Tested in Chrome and Edge (other browsers may not support certain features like speech synthesis)
 
 ## Prerequisites
 
