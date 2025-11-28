@@ -1,11 +1,12 @@
 name: CI/CD Pipeline
 
 # Trigger this workflow on:
-# - Push to main or docs-and-tests branches
+# - Push to ANY branch (we want to run tests on feature branches too)
 # - Pull requests targeting main branch
 on:
   push:
-    branches: [ docs-and-tests, main ]
+    # Match all branches
+    branches: [ '**' ]
   pull_request:
     branches: [ main ]
 
@@ -53,8 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: test  # Only run after tests pass
     # Only build on main branch (not on feature branches or PRs)
-    # if: github.ref == 'refs/heads/main'
-    # TODO: add this again when I am done testing!
+    if: github.ref == 'refs/heads/main'
     
     steps:
       - name: Checkout code
@@ -110,8 +110,7 @@ jobs:
           du -sh ${{ env.DEPLOY_DIR }}/
       
       # ********************************** Deploy Section **********************************
-      # Install Vercel CLI globally
-      # Note: Requires Node.js 20+
+      # Install Vercel CLI globally using npm (installed in previous Node.js step)
       - name: Install Vercel CLI
         run: npm install --global vercel@${{ env.VERCEL_VERSION }}
       
