@@ -138,7 +138,6 @@ Located in: `org.combocoach.ui.molecules/`
 - **ControlPanelMolecule.kt** - Action buttons panel (Configuration, Start, Stop, Preview)
 - **ConfigFormMolecule.kt** - Configuration form with all training settings
 - **ActionCardMolecule.kt** - Displays current action or waiting state
-- **TrainingStatsMolecule.kt** - Shows training statistics (combos completed)
 - **PreviewDisplayMolecule.kt** - Displays combo preview with formatted text
 - **StrikeLegendMolecule.kt** - Strike notation reference
 
@@ -219,7 +218,6 @@ app/src/jsMain/kotlin/org/combocoach/ui/
 │   ├── ControlPanelMolecule.kt        # Control buttons
 │   ├── PreviewDisplayMolecule.kt      # Preview display
 │   ├── StrikeLegendMolecule.kt        # Strike reference
-│   └── TrainingStatsMolecule.kt       # Stats display
 └── components/
     ├── DisplayAreaComponent.kt        # Main display (organism)
     └── HeaderComponent.kt             # App header
