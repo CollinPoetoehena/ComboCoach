@@ -21,7 +21,8 @@ kotlin {
         browser {
             // Webpack configuration for bundling the application
             // See detailed docs: https://kotlinlang.org/docs/js-project-setup.html#webpack-task
-            webpackTask {
+            // NOTE: use commonWebpackConfig to set options common to both dev and prod builds
+            commonWebpackConfig {
                 outputFileName = "combocoach.js"
             }
             
