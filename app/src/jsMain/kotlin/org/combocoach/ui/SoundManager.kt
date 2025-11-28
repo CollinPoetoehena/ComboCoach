@@ -10,9 +10,8 @@ import org.combocoach.domain.Action
  * directly by the browser’s built-in `speechSynthesis`: https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis
  */
 object SoundManager {
-    
-    private var isEnabled = true
-    private var volume = 0.3f // Default volume (0.0 to 1.0)
+    private var isEnabled = true // Default to true at startup
+    private var volume = 0.6f // Default volume (0.0 to 1.0)
     private var rate = 1.0 // Speech rate (0.1 to 10)
     private var pitch = 1.0 // Speech pitch (0 to 2)
     private var selectedVoiceIndex: Int? = null // Index of selected voice
@@ -91,23 +90,25 @@ object SoundManager {
      * between consecutive actions.
      * 
      * Rate calculation logic:
-     * - actionIntervalMs = 500ms (0.5s) -> rate = 2.0 (fast, to fit in short time)
-     * - actionIntervalMs = 1000ms (1.0s) -> rate = 1.5 (moderate-fast)
-     * - actionIntervalMs = 2000ms (2.0s) -> rate = 1.0 (normal speed)
-     * - actionIntervalMs >= 3000ms (3.0s+) -> rate = 0.8 (slightly slower for clarity)
-     * 
-     * This ensures the speech synthesis completes before the next action is displayed.
-     * 
-     * @param actionIntervalMs The interval between actions in milliseconds
+     * - actionIntervalMs <= 500ms (0.5s)   -> rate = 10.0 (extremely fast, fits very short intervals)
+     * - actionIntervalMs <= 750ms (0.75s)  -> rate = 7.0 (fast, but slightly slower than max)
+     * - actionIntervalMs <= 1000ms (1.0s)  -> rate = 4.0 (moderate-fast, common training pace)
+     * - actionIntervalMs <= 1500ms (1.5s)  -> rate = 3.0 (slightly faster than normal)
+     * - actionIntervalMs <= 2000ms (2.0s)  -> rate = 2.0 (normal speaking speed)
+     * - actionIntervalMs >= 3000ms (3.0s+) -> rate = 1.0 (slower, for clarity when pace is relaxed)
+     *
+     * This ensures speech synthesis completes before the next action is displayed.
+     *
+     * @param actionIntervalMs The interval between actions in milliseconds.
      */
     fun autoAdjustRateForInterval(actionIntervalMs: Int) {
         rate = when {
-            actionIntervalMs <= 500 -> 5.0      // Very fast for 0.5s intervals
-            actionIntervalMs <= 750 -> 1.8      // Fast for 0.75s intervals
-            actionIntervalMs <= 1000 -> 1.5     // Moderate-fast for 1s intervals
-            actionIntervalMs <= 1500 -> 1.2     // Slightly faster for 1.5s intervals
-            actionIntervalMs <= 2000 -> 1.0     // Normal for 2s intervals
-            else -> 0.8                          // Slightly slower for 3s+ intervals
+            actionIntervalMs <= 500 -> 10.0  // Extremely fast for 0.5s intervals
+            actionIntervalMs <= 750 -> 7.0   // Fast for 0.75s intervals
+            actionIntervalMs <= 1000 -> 4.0  // Moderate-fast for 1s intervals
+            actionIntervalMs <= 1500 -> 3.0  // Slightly faster for 1.5s intervals
+            actionIntervalMs <= 2000 -> 2.0  // Normal for 2s intervals
+            else -> 1.0                      // Slower for 3s+ intervals
         }
         console.log("Auto-adjusted speech rate to $rate for ${actionIntervalMs}ms action interval")
     }
@@ -169,9 +170,9 @@ object SoundManager {
         val synth = speechSynthesis ?: return
 
         try {
-            // Cancel any ongoing speech before starting a new one.
-            // This ensures that repeated calls don't overlap or queue up.
-            synth.cancel()
+            // NOTE: Cancelled speach is disabled to avoid speaking only part of 
+            // a sound in between actions, but it is kept here for reference.
+            // synth.cancel()
 
             // Create a new speech utterance object with the given text.
             // SpeechSynthesisUtterance is the Web Speech API class that
@@ -194,6 +195,8 @@ object SoundManager {
                     utterance.voice = voices[selectedVoiceIndex!!]
                 }
             }
+            // Log for debug purposes and information to ensure the correct values are used
+            console.log("Speaking text '$text' with volume=$volume, rate=$rate, pitch=$pitch")
 
             // Send the utterance to the speech synthesis engine.
             // The browser will now speak the text aloud using the

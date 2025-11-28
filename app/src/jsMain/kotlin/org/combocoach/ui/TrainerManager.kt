@@ -34,6 +34,7 @@ class TrainerManager {
      * Update configuration and reinitialize trainer
      */
     fun updateConfiguration(newConfig: TrainingConfiguration) {
+        console.log("Updating configuration: $newConfig")
         config = newConfig
         trainer.updateConfiguration(config)
         setupCallbacks()

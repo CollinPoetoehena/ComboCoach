@@ -14,11 +14,13 @@ import org.w3c.dom.HTMLSelectElement
 object ConfigFormMolecule {
     
     fun create(config: TrainingConfiguration): HTMLElement {
-        // Get current sound settings from SoundManager
+        // Get current sound settings from SoundManager (default to enabled if not set)
         val currentVolume = (org.combocoach.ui.SoundManager.getVolume() * 100).toInt()
         val currentPitch = (org.combocoach.ui.SoundManager.getPitch() * 10).toInt()
         val currentVoiceIndex = org.combocoach.ui.SoundManager.getVoiceIndex()
         val currentSoundEnabled = org.combocoach.ui.SoundManager.isEnabled()
+        // Hide sound controls if sound is disabled
+        val soundControlsDisplay = if (currentSoundEnabled) "flex" else "none"
         
         return document.createElement("div").apply {
             setAttribute("class", "config-form")
@@ -31,7 +33,7 @@ object ConfigFormMolecule {
                     
                     <div class="config-item">
                         <label for="combo-interval-input">Combination Interval (seconds):</label>
-                        <input type="number" id="combo-interval-input" value="${config.combinationIntervalMs / 1000.0}" min="0.5" max="10" step="0.5" />
+                        <input type="number" id="combo-interval-input" value="${config.combinationIntervalMs / 1000.0}" min="1.0" max="10" step="0.5" />
                     </div>
                     
                     <div class="config-item">
@@ -80,19 +82,19 @@ object ConfigFormMolecule {
                         </label>
                     </div>
                     
-                    <div class="config-item">
+                    <div class="config-item" id="sound-volume-container" style="display: $soundControlsDisplay;">
                         <label for="volume-slider">Sound Volume:</label>
                         <input type="range" id="volume-slider" min="5" max="100" value="$currentVolume" step="5" style="flex: 1;" />
                         <span id="volume-display" style="min-width: 40px; text-align: right;">$currentVolume%</span>
                     </div>
                     
-                    <div class="config-item">
+                    <div class="config-item" id="sound-pitch-container" style="display: $soundControlsDisplay;">
                         <label for="pitch-slider">Speech Pitch:</label>
                         <input type="range" id="pitch-slider" min="0" max="20" value="$currentPitch" step="1" style="flex: 1;" />
                         <span id="pitch-display" style="min-width: 40px; text-align: right;">${currentPitch / 10.0}</span>
                     </div>
                     
-                    <div class="config-item">
+                    <div class="config-item" id="sound-voice-container" style="display: $soundControlsDisplay;">
                         <label for="voice-select">Voice:</label>
                         <select id="voice-select">
                             <option value="">Default</option>
@@ -150,11 +152,17 @@ object ConfigFormMolecule {
      * Setup sound control listeners
      */
     fun setupSoundControls() {
-        // Sound enabled checkbox
+        // Sound enabled checkbox - toggle visibility of sound controls
         document.getElementById("sound-enabled-check")?.addEventListener("change", { event ->
             val checkbox = event.target as? HTMLInputElement
             val isEnabled = checkbox?.checked ?: true
             org.combocoach.ui.SoundManager.setEnabled(isEnabled)
+            
+            // Show/hide sound controls based on checkbox state
+            val display = if (isEnabled) "flex" else "none"
+            (document.getElementById("sound-volume-container") as? HTMLElement)?.setAttribute("style", "display: $display;")
+            (document.getElementById("sound-pitch-container") as? HTMLElement)?.setAttribute("style", "display: $display;")
+            (document.getElementById("sound-voice-container") as? HTMLElement)?.setAttribute("style", "display: $display;")
         })
         
         // Volume slider (minimum 5%)
