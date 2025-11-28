@@ -1,7 +1,6 @@
 # Design & Architecture
 
-TODO: extend this a bit and use the latest version of the code/setup for this in the future.
-
+This document outlines the high-level design, architecture layers, boxing flow system, design patterns, and key design decisions of the ComboCoach application.
 
 ## High Level Design (HLD)
 ```
@@ -15,7 +14,7 @@ TODO: extend this a bit and use the latest version of the code/setup for this in
 │  │ UI Layer    │ Service Layer   │   Domain Layer      │  │
 │  │             │                 │                     │  │
 │  │ Components  │ ComboTrainer    │   Business Logic    │  │
-│  │ Managers    │ IntervalTrainer │  Entities           │  │
+│  │ Managers    │ IntervalTrainer │   Entities          │  │
 │  │ State       │ Generator       │   Rules             │  │
 │  └─────────────┴─────────────────┴─────────────────────┘  │
 └───────────────────────────────────────────────────────────┘
@@ -109,4 +108,159 @@ Position.after(action, stance): Position
 **Why**: Type safety, exhaustive when expressions, data in defense actions
 **Alternative**: Enums (rejected - can't hold data)
 
-See [UIArchitecture.md](UIArchitecture.md) for UI component details.
+### 5. Vercel for Deployment
+**Why**: 
+- Zero-config deployment for static sites
+- Automatic HTTPS and CDN distribution
+- Perfect fit for Kotlin/JS single-page applications
+- Free tier sufficient for personal projects
+- GitHub integration for CI/CD
+- Instant rollbacks and preview deployments
+**Alternative**: GitHub Pages (considered - less flexible), Self-hosting (rejected - unnecessary maintenance overhead)
+
+---
+# UI Component Architecture
+
+This document describes the UI architecture following atomic design principles.
+
+## Architecture Overview
+
+The application now follows a **hierarchical component structure** with three levels:
+
+### 1. **Atoms** (Smallest Components)
+Located in: `org.combocoach.ui.atoms/`
+
+- **ButtonAtom.kt** - Reusable button component with enable/disable functionality
+
+### 2. **Molecules** (Combinations of Atoms)
+Located in: `org.combocoach.ui.molecules/`
+
+- **ControlPanelMolecule.kt** - Action buttons panel (Configuration, Start, Stop, Preview)
+- **ConfigFormMolecule.kt** - Configuration form with all training settings
+- **ActionCardMolecule.kt** - Displays current action or waiting state
+- **TrainingStatsMolecule.kt** - Shows training statistics (combos completed)
+- **PreviewDisplayMolecule.kt** - Displays combo preview with formatted text
+- **StrikeLegendMolecule.kt** - Strike notation reference
+
+### 3. **Organisms** (Complex Components)
+Located in: `org.combocoach.ui.components/`
+
+- **DisplayAreaComponent.kt** - Main display area (organism)
+  - Contains: Control Panel + Content Area
+  - Manages display modes: Welcome, Configuration, Training, Preview
+  
+- **HeaderComponent.kt** - Application header
+
+### 4. **Managers** (State & Logic)
+Located in: `org.combocoach.ui/`
+
+- **TrainerManager.kt** - Business logic facade
+  - Manages ComboTrainer instance
+  - Handles training lifecycle
+  - Provides clean API for UI components
+  
+- **TrainingStateManager.kt** - State management
+  - Tracks training state
+  - Manages configuration
+  - Handles state transitions
+
+## Display Area Structure
+
+The `DisplayAreaComponent` is the main interactive area with two sections:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│         Display Area (Organism)                                        │
+├────────────────────────────────────────────────────────────────────────┤
+│  ┌───────────────────────────────────────────────────────────────────┐ │
+│  │    Control Panel (Molecule)                                       │ │
+│  │  [⚙️ Config] [▶️ Start] [⏹️ Stop] [👁️ Preview]                  │ │
+│  └───────────────────────────────────────────────────────────────────┘ │
+│  ┌───────────────────────────────────────────────────────────────────┐ │
+│  │    Content Area                                                   │ │
+│  │    (Shows: Config Form | Training | Preview | Welcome)            │ │
+│  └───────────────────────────────────────────────────────────────────┘ │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+## Display Modes
+
+The Content Area can display different modes:
+
+1. **WELCOME** - Initial welcome message
+2. **CONFIGURATION** - Configuration form (ConfigFormMolecule)
+3. **TRAINING** - Active training session with stats, action cards, progress bar
+4. **PREVIEW** - Combo preview display
+
+## Benefits of This Architecture
+
+✅ **Atomic Design** - Clear hierarchy from atoms → molecules → organisms
+✅ **Single Display Area** - All content shown in one unified component
+✅ **Consistent Control Panel** - Always visible with all main actions
+✅ **Mode-Based Content** - Content area switches based on user interaction
+✅ **Reusable Components** - Atoms and molecules can be used independently
+✅ **Separation of Concerns** - Each component has a single responsibility
+✅ **Easy Testing** - Components can be tested in isolation
+✅ **Maintainability** - Easy to find and modify specific functionality
+
+## File Structure
+
+```
+app/src/jsMain/kotlin/org/combocoach/ui/
+├── ComboCoachApp.kt                   # Main orchestrator
+├── NotificationManager.kt             # Toast notifications
+├── TrainerManager.kt                  # Business logic facade
+├── TrainingStateManager.kt            # State management
+├── atoms/
+│   └── ButtonAtom.kt                  # Button component
+├── molecules/
+│   ├── ActionCardMolecule.kt          # Action display
+│   ├── ConfigFormMolecule.kt          # Config form
+│   ├── ControlPanelMolecule.kt        # Control buttons
+│   ├── PreviewDisplayMolecule.kt      # Preview display
+│   ├── StrikeLegendMolecule.kt        # Strike reference
+│   └── TrainingStatsMolecule.kt       # Stats display
+└── components/
+    ├── DisplayAreaComponent.kt        # Main display (organism)
+    └── HeaderComponent.kt             # App header
+```
+
+## Component Responsibilities
+
+### ComboCoachApp (Main Orchestrator)
+- Entry point for the application
+- Initializes managers and components
+- Renders the main application structure
+- Minimal business logic (delegated to managers)
+
+### TrainerManager (Business Logic Facade)
+- Manages ComboTrainer instance
+- Handles training lifecycle (start, stop, pause)
+- Coordinates with IntervalTrainer
+- Provides clean API for UI components
+- Sets up trainer callbacks
+
+### TrainingStateManager (State Management)
+- Tracks current training state
+- Manages configuration
+- Handles state transitions
+- Provides state query methods
+- Ensures consistent state updates
+
+### DisplayAreaComponent (Main UI Organism)
+- Contains Control Panel and Content Area
+- Manages display mode switching
+- Coordinates between sub-components
+- Provides methods for showing different states
+
+### Molecules
+- Self-contained UI components
+- Combine atoms to create functional units
+- Handle their own rendering logic
+- Expose clean APIs for parent components
+
+### Atoms
+- Smallest reusable components
+- No business logic
+- Pure presentation components
+- Highly reusable across the application

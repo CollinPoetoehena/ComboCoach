@@ -1,7 +1,6 @@
 # Technology Stack
 
-TODO: extend this a bit and use the latest version of the code/setup for this in the future.
-
+This document details the technology stack, architecture, and design decisions behind the ComboCoach application.
 
 ## Overview
 
@@ -33,14 +32,11 @@ ComboCoach is a **frontend-only** application built with Kotlin/JS. No backend, 
 
 - Kotlin DSL build scripts
 - Automatic webpack bundling
-- Hot reload development server: `./gradlew jsBrowserDevelopmentRun --continuous`
 
 ### Testing
 
 - **kotlin-test-js**: Kotlin's official testing library for JavaScript
-- **Mocha**: Fast, reliable test runner for Node.js
 - **Node.js**: Test execution environment (browser tests disabled)
-- **Run tests**: `./gradlew jsNodeTest`
 - **Philosophy**: Focus on business logic testing with Node.js for speed and simplicity
 
 See [Testing.md](Testing.md) for detailed testing strategy and best practices.

@@ -74,30 +74,9 @@ The report includes:
 6. **Test Edge Cases**: Include tests for boundary conditions, empty inputs, and error cases
 7. **Avoid DOM Dependencies**: For UI tests, test state and logic, not DOM manipulation
 
-### Browser API Tests
-
-Tests requiring browser-specific APIs are not included:
-- Web Audio API (for audio feedback)
-- Local Storage (for configuration persistence)
-- Browser notifications (for system alerts)
-
-These can be added later if automated testing becomes necessary, but manual testing is currently sufficient.
-
 ## Continuous Integration
 
-The test suite is designed to run efficiently in CI/CD:
-
-```yaml
-# Example GitHub Actions workflow
-- name: Run Tests
-  run: ./gradlew jsNodeTest
-```
-
-Benefits:
-- No browser installation required
-- Fast execution (~2-3 seconds)
-- Deterministic results
-- Clear failure messages
+The test suite is designed to run efficiently in CI/CD, see [Deployment & CI/CD.md](./Deployment_CI-CD.md) for details on GitHub Actions setup.
 
 ## Troubleshooting
 
@@ -108,7 +87,7 @@ Benefits:
 ./gradlew clean jsNodeTest
 
 # Check for Node.js version issues
-node --version  # Should be 16+
+node --version
 
 # Verify Gradle is up to date
 ./gradlew --version
@@ -120,4 +99,4 @@ If tests timeout:
 1. Check for infinite loops in test code
 2. Ensure async operations complete
 3. Reduce test iterations for random behavior tests
-
+4. Increase timeout settings if necessary

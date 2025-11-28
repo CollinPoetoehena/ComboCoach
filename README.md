@@ -31,8 +31,6 @@ cd ComboCoach
 
 Access at `http://localhost:8080`
 
-**Run tests**: `./gradlew test`
-
 ## Usage
 
 1. Click ⚙️ Configuration to set training mode, stance, and intervals
@@ -40,14 +38,12 @@ Access at `http://localhost:8080`
 3. Follow on-screen actions
 4. Use Pause/Resume/Stop controls as needed
 
-## Documentation
+## Further Documentation
 
-- **[README.md](./README.md)** - Project overview and quick start
-- **[TechStack.md](./docs/TechStack.md)** - Kotlin/JS, frontend-only architecture
-- **[Design.md](./docs/Design.md)** - Architecture layers, boxing flow system
-- **[Testing.md](./docs/Testing.md)** - Testing guide and examples
-- **[Deployment.md](./docs/Deployment.md)** - Deploy to Vercel, Netlify, GitHub Pages, Docker
-- **[UIArchitecture.md](./docs/UIArchitecture.md)** - Atomic design components
+- **[Design & Architecture](./docs/Design.md)** - Architecture layers, boxing flow system
+- **[TechStack](./docs/TechStack.md)** - Kotlin/JS, frontend-only architecture
+- **[Testing](./docs/Testing.md)** - Testing guide and examples
+- **[Deployment & CI/CD](./docs/Deployment_CI-CD.md)** - Deployment to Vercel & GitHub Actions CI/CD setup
 
 ## License
 
