@@ -66,6 +66,19 @@ object ConfigFormMolecule {
                             Use Number Notation (e.g., "1 2 3")
                         </label>
                     </div>
+                    
+                    <div class="config-item config-item-checkbox">
+                        <label>
+                            <input type="checkbox" id="sound-enabled-check" checked />
+                            Enable Sound Effects
+                        </label>
+                    </div>
+                    
+                    <div class="config-item">
+                        <label for="volume-slider">Sound Volume:</label>
+                        <input type="range" id="volume-slider" min="0" max="100" value="30" step="5" style="flex: 1;" />
+                        <span id="volume-display" style="min-width: 40px; text-align: right;">30%</span>
+                    </div>
                 </div>
                 <button id="apply-config-btn" class="btn btn-primary">Apply Configuration</button>
             """
@@ -111,6 +124,29 @@ object ConfigFormMolecule {
             } else {
                 offenseContainer?.setAttribute("style", "display: none;")
             }
+        })
+    }
+    
+    /**
+     * Setup sound control listeners
+     */
+    fun setupSoundControls() {
+        // Sound enabled checkbox
+        document.getElementById("sound-enabled-check")?.addEventListener("change", { event ->
+            val checkbox = event.target as? HTMLInputElement
+            val isEnabled = checkbox?.checked ?: true
+            org.combocoach.ui.SoundManager.setEnabled(isEnabled)
+        })
+        
+        // Volume slider
+        val volumeSlider = document.getElementById("volume-slider") as? HTMLInputElement
+        val volumeDisplay = document.getElementById("volume-display")
+        
+        volumeSlider?.addEventListener("input", { event ->
+            val slider = event.target as? HTMLInputElement
+            val volume = slider?.value?.toIntOrNull() ?: 30
+            volumeDisplay?.textContent = "$volume%"
+            org.combocoach.ui.SoundManager.setVolume(volume / 100f)
         })
     }
 }

@@ -102,6 +102,9 @@ class TrainerManager {
         intervalTrainer.onActionDisplay = { action, index, total, _ ->
             currentDisplayedActions.add(action)
             onActionDisplay?.invoke(action, index, total)
+            
+            // Speak the action number/name
+            SoundManager.speakAction(action)
         }
         
         intervalTrainer.onCombinationComplete = { comboNumber ->
