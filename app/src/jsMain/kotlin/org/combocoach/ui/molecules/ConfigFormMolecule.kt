@@ -14,6 +14,12 @@ import org.w3c.dom.HTMLSelectElement
 object ConfigFormMolecule {
     
     fun create(config: TrainingConfiguration): HTMLElement {
+        // Get current sound settings from SoundManager
+        val currentVolume = (org.combocoach.ui.SoundManager.getVolume() * 100).toInt()
+        val currentPitch = (org.combocoach.ui.SoundManager.getPitch() * 10).toInt()
+        val currentVoiceIndex = org.combocoach.ui.SoundManager.getVoiceIndex()
+        val currentSoundEnabled = org.combocoach.ui.SoundManager.isEnabled()
+        
         return document.createElement("div").apply {
             setAttribute("class", "config-form")
             innerHTML = """
@@ -25,7 +31,7 @@ object ConfigFormMolecule {
                     
                     <div class="config-item">
                         <label for="combo-interval-input">Combination Interval (seconds):</label>
-                        <input type="number" id="combo-interval-input" value="${config.combinationIntervalMs / 1000.0}" min="1" max="10" step="0.5" />
+                        <input type="number" id="combo-interval-input" value="${config.combinationIntervalMs / 1000.0}" min="0.5" max="10" step="0.5" />
                     </div>
                     
                     <div class="config-item">
@@ -69,15 +75,28 @@ object ConfigFormMolecule {
                     
                     <div class="config-item config-item-checkbox">
                         <label>
-                            <input type="checkbox" id="sound-enabled-check" checked />
+                            <input type="checkbox" id="sound-enabled-check" ${if (currentSoundEnabled) "checked" else ""} />
                             Enable Sound Effects
                         </label>
                     </div>
                     
                     <div class="config-item">
                         <label for="volume-slider">Sound Volume:</label>
-                        <input type="range" id="volume-slider" min="0" max="100" value="30" step="5" style="flex: 1;" />
-                        <span id="volume-display" style="min-width: 40px; text-align: right;">30%</span>
+                        <input type="range" id="volume-slider" min="5" max="100" value="$currentVolume" step="5" style="flex: 1;" />
+                        <span id="volume-display" style="min-width: 40px; text-align: right;">$currentVolume%</span>
+                    </div>
+                    
+                    <div class="config-item">
+                        <label for="pitch-slider">Speech Pitch:</label>
+                        <input type="range" id="pitch-slider" min="0" max="20" value="$currentPitch" step="1" style="flex: 1;" />
+                        <span id="pitch-display" style="min-width: 40px; text-align: right;">${currentPitch / 10.0}</span>
+                    </div>
+                    
+                    <div class="config-item">
+                        <label for="voice-select">Voice:</label>
+                        <select id="voice-select">
+                            <option value="">Default</option>
+                        </select>
                     </div>
                 </div>
                 <button id="apply-config-btn" class="btn btn-primary">Apply Configuration</button>
@@ -138,15 +157,78 @@ object ConfigFormMolecule {
             org.combocoach.ui.SoundManager.setEnabled(isEnabled)
         })
         
-        // Volume slider
+        // Volume slider (minimum 5%)
         val volumeSlider = document.getElementById("volume-slider") as? HTMLInputElement
         val volumeDisplay = document.getElementById("volume-display")
         
         volumeSlider?.addEventListener("input", { event ->
             val slider = event.target as? HTMLInputElement
-            val volume = slider?.value?.toIntOrNull() ?: 30
+            val volume = (slider?.value?.toIntOrNull() ?: 30).coerceAtLeast(5)
             volumeDisplay?.textContent = "$volume%"
             org.combocoach.ui.SoundManager.setVolume(volume / 100f)
         })
+        
+        // Pitch slider (0 to 2.0)
+        val pitchSlider = document.getElementById("pitch-slider") as? HTMLInputElement
+        val pitchDisplay = document.getElementById("pitch-display")
+        
+        pitchSlider?.addEventListener("input", { event ->
+            val slider = event.target as? HTMLInputElement
+            val pitchValue = (slider?.value?.toIntOrNull() ?: 10) / 10f
+            pitchDisplay?.textContent = "$pitchValue"
+            org.combocoach.ui.SoundManager.setPitch(pitchValue)
+        })
+        
+        // Populate voice dropdown - voices may not be ready immediately
+        populateVoices()
+        
+        // In Chrome, voices are loaded asynchronously, so we need to handle onvoiceschanged
+        val synth = js("window.speechSynthesis")
+        if (js("'onvoiceschanged' in synth") as Boolean) {
+            synth.onvoiceschanged = { populateVoices() }
+        }
+        
+        // Voice selection
+        document.getElementById("voice-select")?.addEventListener("change", { event ->
+            val select = event.target as? HTMLSelectElement
+            val selectedIndex = (select?.selectedIndex ?: 0) - 1 // -1 because of "Default" option
+            org.combocoach.ui.SoundManager.setVoice(if (selectedIndex >= 0) selectedIndex else null)
+        })
+    }
+    
+    /**
+     * Populate voice dropdown with available voices
+     * Following MDN documentation pattern for SpeechSynthesisVoice
+     */
+    private fun populateVoices() {
+        val voiceSelect = document.getElementById("voice-select") as? HTMLSelectElement ?: return
+        val voices = org.combocoach.ui.SoundManager.getVoices()
+        val currentVoiceIndex = org.combocoach.ui.SoundManager.getVoiceIndex()
+        
+        // Clear existing options except the first (Default)
+        val optionsLength = voiceSelect.options.length as Int
+        while (optionsLength > 1) {
+            voiceSelect.remove(1)
+        }
+        
+        // Add voice options following MDN pattern
+        voices.forEachIndexed { index, voice ->
+            val option = document.createElement("option") as org.w3c.dom.HTMLOptionElement
+            val name = voice.name.toString()
+            val lang = voice.lang.toString()
+            val isDefault = voice.default as? Boolean ?: false
+            
+            option.value = index.toString()
+            option.text = "$name ($lang)" + if (isDefault) " — DEFAULT" else ""
+            option.setAttribute("data-name", name)
+            option.setAttribute("data-lang", lang)
+            
+            voiceSelect.add(option)
+        }
+        
+        // Restore previously selected voice
+        if (currentVoiceIndex != null) {
+            voiceSelect.selectedIndex = currentVoiceIndex + 1 // +1 because of "Default" option
+        }
     }
 }

@@ -37,6 +37,10 @@ class TrainerManager {
         config = newConfig
         trainer.updateConfiguration(config)
         setupCallbacks()
+        
+        // Auto-adjust speech rate based on action interval
+        SoundManager.autoAdjustRateForInterval(config.actionIntervalMs)
+        
         NotificationManager.success("Configuration applied!")
     }
     
@@ -45,6 +49,10 @@ class TrainerManager {
      */
     fun startTraining() {
         currentDisplayedActions.clear()
+        
+        // Auto-adjust speech rate based on current action interval
+        SoundManager.autoAdjustRateForInterval(config.actionIntervalMs)
+        
         trainer.startIntervalTraining()
     }
     
