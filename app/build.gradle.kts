@@ -5,7 +5,9 @@
 
 // Apply the Kotlin multiplatform plugin for cross-platform Kotlin development
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
+    // Kotlin multiplatform for targeting multiple platforms (JVM, JS, Native, etc.): 
+    // See for Kotlin JS https://kotlinlang.org/docs/js-project-setup.html
+    kotlin("multiplatform") version "2.2.21"
 }
 
 // Configure Maven Central as the dependency repository
