@@ -11,7 +11,7 @@ on:
 
 # Define reusable variables for the entire workflow
 env:
-  JAVA_VERSION: '17'
+  JAVA_VERSION: '21'
   JAVA_DISTRIBUTION: 'temurin'
   NODE_VERSION: '20'
   VERCEL_VERSION: 'latest'
@@ -89,6 +89,17 @@ jobs:
           cp ${{ env.RESOURCES_DIR }}/index.html ${{ env.DEPLOY_DIR }}/
           cp ${{ env.BUILD_OUTPUT_DIR }}/*.js ${{ env.DEPLOY_DIR }}/
           cp ${{ env.BUILD_OUTPUT_DIR }}/*.js.map ${{ env.DEPLOY_DIR }}/ 2>/dev/null || true
+      # Create Vercel configuration to skip build step (files are already built above)
+      # This prevents Vercel from trying to run Gradle during deployment
+      - name: Create Vercel configuration
+        run: |
+          cat > ${{ env.DEPLOY_DIR }}/vercel.json << 'EOF'
+          {
+            "buildCommand": null,
+            "outputDirectory": ".",
+            "installCommand": null
+          }
+          EOF
       # Display deployment folder contents for debugging
       - name: List deployment files
         run: |
