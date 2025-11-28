@@ -36,10 +36,6 @@ class ComboCoachApp(private val rootElement: Element) {
             )
         }
         
-        trainerManager.onCombinationComplete = { comboNumber ->
-            DisplayAreaComponent.updateCompletedCombos(comboNumber)
-        }
-        
         trainerManager.onWaitingBetweenCombinations = { secondsRemaining ->
             DisplayAreaComponent.showWaitingMessage(secondsRemaining)
         }
@@ -147,10 +143,6 @@ class ComboCoachApp(private val rootElement: Element) {
     private fun restoreTrainingWithState() {
         // Recreate the training container
         DisplayAreaComponent.showTrainingSession()
-        
-        // Restore completed combos count
-        val completedCombos = trainerManager.getCompletedCombos()
-        DisplayAreaComponent.updateCompletedCombos(completedCombos)
         
         // Restore the combination preview (show only actions displayed so far, not full combo)
         val displayedActions = trainerManager.getCurrentDisplayedActions()

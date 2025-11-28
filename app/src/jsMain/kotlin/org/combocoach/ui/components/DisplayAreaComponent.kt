@@ -214,10 +214,6 @@ object DisplayAreaComponent {
         document.getElementById("progress-bar")?.setAttribute("style", "width: $percentage%")
     }
     
-    fun updateCompletedCombos(comboNumber: Int) {
-        TrainingStatsMolecule.updateCompletedCombos(comboNumber)
-    }
-    
     fun showWaitingMessage(secondsRemaining: Int) {
         val currentActionDisplay = document.getElementById("current-action-display")
         currentActionDisplay?.innerHTML = ""
@@ -254,7 +250,6 @@ object DisplayAreaComponent {
         
         val trainingContainer = document.createElement("div").apply {
             setAttribute("class", "training-container")
-            appendChild(TrainingStatsMolecule.create())
             appendChild(document.createElement("div").apply {
                 setAttribute("id", "current-action-display")
                 setAttribute("class", "current-action-display")
