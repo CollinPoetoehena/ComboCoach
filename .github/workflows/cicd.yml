@@ -1,0 +1,130 @@
+name: CI/CD Pipeline
+
+# Trigger this workflow on:
+# - Push to ANY branch (we want to run tests on feature branches too)
+# - Pull requests targeting main branch
+on:
+  push:
+    # Match all branches
+    branches: [ '**' ]
+  pull_request:
+    branches: [ main ]
+
+# Define reusable variables for the entire workflow
+env:
+  JAVA_VERSION: '21'
+  JAVA_DISTRIBUTION: 'temurin'
+  NODE_VERSION: '20'
+  VERCEL_VERSION: 'latest'
+  DEPLOY_DIR: 'deploy'
+  # File locations from ./gradlew jsBrowserProductionWebpack
+  # Actual Gradle output directory for production build (JS)
+  BUILD_OUTPUT_DIR: 'app/build/kotlin-webpack/js/productionExecutable'
+  # Where index.html is located (HTML)
+  RESOURCES_DIR: 'app/build/processedResources/js/main'
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      # Set up Java environment for Kotlin/JS compilation
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+      
+      # Enable Gradle caching to speed up builds
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      
+      # Run unit tests using Node.js environment (no browser needed)
+      - name: Run Tests
+        run: ./gradlew clean jsNodeTest
+
+  # Build and deploy job (done in a single job to share artifacts 
+  # easily (avoids uploading/downloading artifacts between jobs))
+  build-and-deploy:
+    name: Build & Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: test  # Only run after tests pass
+    # Only build on main branch (not on feature branches or PRs)
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up JDK ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
+      
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      
+      # Install Node.js (for Vercel CLI)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      
+      # ********************************** Build Section **********************************
+      # Compile Kotlin/JS to optimized JavaScript bundle with Webpack
+      # Output: See BUILD_OUTPUT_DIR and RESOURCES_DIR env variables
+      # NOTE: This step will FAIL the entire job if build fails
+      - name: Build production bundle
+        run: ./gradlew jsBrowserProductionWebpack
+      
+      # Copy index.html to the same directory as the JS bundle for deployment
+      - name: Prepare deployment directory
+        run: |
+          mkdir -p ${{ env.DEPLOY_DIR }}
+          cp ${{ env.RESOURCES_DIR }}/index.html ${{ env.DEPLOY_DIR }}/
+          cp ${{ env.BUILD_OUTPUT_DIR }}/*.js ${{ env.DEPLOY_DIR }}/
+          cp ${{ env.BUILD_OUTPUT_DIR }}/*.js.map ${{ env.DEPLOY_DIR }}/ 2>/dev/null || true
+      # Create Vercel configuration to skip build step (files are already built above)
+      # This prevents Vercel from trying to run Gradle during deployment
+      - name: Create Vercel configuration
+        run: |
+          cat > ${{ env.DEPLOY_DIR }}/vercel.json << 'EOF'
+          {
+            "buildCommand": null,
+            "outputDirectory": ".",
+            "installCommand": null
+          }
+          EOF
+      # Display deployment folder contents for debugging
+      - name: List deployment files
+        run: |
+          echo "📦 Deployment folder contents:"
+          ls -lh ${{ env.DEPLOY_DIR }}/
+          echo ""
+          echo "📊 Total size:"
+          du -sh ${{ env.DEPLOY_DIR }}/
+      
+      # ********************************** Deploy Section **********************************
+      # Install Vercel CLI globally using npm (installed in previous Node.js step)
+      - name: Install Vercel CLI
+        run: npm install --global vercel@${{ env.VERCEL_VERSION }}
+      
+      # Download Vercel project configuration and environment variables
+      # Requires VERCEL_TOKEN, VERCEL_ORG_ID, and VERCEL_PROJECT_ID secrets
+      - name: Pull Vercel Environment Information
+        working-directory: ${{ env.DEPLOY_DIR }}
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+      
+      # Deploy production bundle to Vercel
+      # All files in the deploy directory will be deployed
+      - name: Deploy Project Artifacts to Vercel
+        working-directory: ${{ env.DEPLOY_DIR }}
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
